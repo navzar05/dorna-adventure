@@ -1,0 +1,45 @@
+import axios, { type AxiosInstance, AxiosError } from 'axios';
+import type { LoginRequest, RegisterRequest } from '../types/auth';
+
+const API_BASE_URL = 'http://localhost:8080/api/v1';
+
+const api: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Request interceptor - add token to requests
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor - handle expired tokens
+api.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      
+      window.location.href = '/login';
+      
+      console.warn('Session expired. Please login again.');
+    }
+    return Promise.reject(error);
+  }
+);
+
+export const authService = {
+  register: (data: RegisterRequest) => api.post<string>('/v1/auth/register', data),
+  login: (data: LoginRequest) => api.post<string>('/v1/auth/login', data),
+};
+
+export default api;
