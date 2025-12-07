@@ -1,3 +1,4 @@
+// src/main/java/ro/atm/backend/entity/User.java
 package ro.atm.backend.entity;
 
 import jakarta.persistence.*;
@@ -29,6 +30,9 @@ public class User implements UserDetails, CredentialsContainer {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false, unique = true)
+    private String email; // Add this field
+
     @Column(nullable = false)
     private String firstName;
 
@@ -58,9 +62,10 @@ public class User implements UserDetails, CredentialsContainer {
     @Column(nullable = false)
     private boolean enabled = true;
 
-    public User(String username, String password, String firstName, String lastName, String phoneNumber) {
+    public User(String username, String password, String email, String firstName, String lastName, String phoneNumber) {
         this.username = username;
         this.password = password;
+        this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;

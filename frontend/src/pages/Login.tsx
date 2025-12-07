@@ -1,6 +1,18 @@
+// src/pages/Login.tsx
 import { useState, type FormEvent, type ChangeEvent } from 'react';
-import { Container, Paper, TextField, Button, Box, Checkbox, FormControlLabel, Alert } from '@mui/material';
+import { 
+  Container, 
+  Paper, 
+  TextField, 
+  Button, 
+  Box, 
+  Checkbox, 
+  FormControlLabel, 
+  Alert,
+  Typography 
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 interface LoginFormData {
@@ -12,6 +24,7 @@ interface LoginFormData {
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { t } = useTranslation();
   
   const [formData, setFormData] = useState<LoginFormData>({
     username: '',
@@ -34,12 +47,12 @@ export default function Login() {
     setError('');
     setLoading(true);
 
-    const result = await login(formData.username, formData.password, formData.rememberMe);
-
+    const result = await login(formData.username, formData.password);
+    
     if (result.success) {
       navigate('/home');
     } else {
-      setError(result.error || 'An error occurred');
+      setError(result.error || t('auth.errorOccurred'));
     }
     
     setLoading(false);
@@ -56,12 +69,19 @@ export default function Login() {
       }}
     >
       <Paper sx={{ p: 3, width: "100%", textAlign: "center" }}>
-        <h1>Login</h1>
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          {t('auth.loginTitle')}
+        </Typography>
+        
+        <Box 
+          component="form" 
+          onSubmit={handleSubmit} 
+          sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}
+        >
           {error && <Alert severity="error">{error}</Alert>}
           
           <TextField
-            label="Username"
+            label={t('auth.username')}
             name="username"
             value={formData.username}
             onChange={handleChange}
@@ -70,7 +90,7 @@ export default function Login() {
           />
           
           <TextField
-            label="Password"
+            label={t('auth.password')}
             name="password"
             type="password"
             value={formData.password}
@@ -87,7 +107,7 @@ export default function Login() {
                 onChange={handleChange}
               />
             }
-            label="Remember me"
+            label={t('auth.rememberMe')}
           />
           
           <Button
@@ -96,11 +116,15 @@ export default function Login() {
             fullWidth
             disabled={loading}
           >
-            {loading ? 'Signing In...' : 'Sign In'}
+            {loading ? t('auth.signingIn') : t('auth.loginButton')}
           </Button>
           
-          <Button variant="outlined" href='/register' fullWidth>
-            Register
+          <Button 
+            variant="outlined" 
+            onClick={() => navigate('/register')}
+            fullWidth
+          >
+            {t('auth.registerButton')}
           </Button>
         </Box>
       </Paper>

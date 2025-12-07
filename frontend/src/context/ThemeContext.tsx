@@ -21,7 +21,6 @@ export const useThemeMode = () => {
 
 export const ThemeContextProvider = ({ children }: { children: ReactNode }) => {
   const [mode, setMode] = useState<PaletteMode>(() => {
-    // Load from localStorage or default to light
     const savedMode = localStorage.getItem('themeMode');
     return (savedMode as PaletteMode) || 'light';
   });
@@ -41,70 +40,70 @@ export const ThemeContextProvider = ({ children }: { children: ReactNode }) => {
           mode,
           ...(mode === 'light'
             ? {
-                // Light mode
+                // Light mode - Very light green & Warm accent
                 primary: {
-                  main: '#2d6a4f',
-                  light: '#52b788',
-                  dark: '#1b4332',
-                  contrastText: '#ffffff',
+                  main: '#a7c957', // Light sage green
+                  light: '#d4e09b', // Very light green
+                  dark: '#6a994e', // Medium green
+                  contrastText: '#1a1a1a',
                 },
                 secondary: {
-                  main: '#74c69d',
-                  light: '#95d5b2',
-                  dark: '#52b788',
-                  contrastText: '#ffffff',
+                  main: '#f4a261', // Warm terracotta
+                  light: '#f8b88b', // Light terracotta
+                  dark: '#e76f51', // Darker orange
+                  contrastText: '#1a1a1a',
                 },
                 background: {
-                  default: '#f8fdf9',
+                  default: '#fafafa',
                   paper: '#ffffff',
                 },
                 text: {
-                  primary: '#1b4332',
-                  secondary: '#2d6a4f',
+                  primary: '#1a1a1a',
+                  secondary: '#4a4a4a',
                 },
               }
             : {
-                // Dark mode
+                // Dark mode - Very dark backgrounds
                 primary: {
-                  main: '#52b788',
-                  light: '#74c69d',
-                  dark: '#2d6a4f',
+                  main: '#6a994e', // Medium green
+                  light: '#a7c957', // Light sage green
+                  dark: '#386641', // Dark green
                   contrastText: '#ffffff',
                 },
                 secondary: {
-                  main: '#95d5b2',
-                  light: '#b7e4c7',
-                  dark: '#74c69d',
-                  contrastText: '#1b4332',
+                  main: '#f4a261', // Warm terracotta
+                  light: '#f8b88b', // Light terracotta
+                  dark: '#e76f51', // Darker orange
+                  contrastText: '#1a1a1a',
                 },
                 background: {
-                  default: '#0a1f1a',
-                  paper: '#1b4332',
+                  default: '#0d1b0d', // Very dark green-black
+                  paper: '#1a2a1a', // Dark green-gray
                 },
                 text: {
-                  primary: '#d8f3dc',
-                  secondary: '#95d5b2',
+                  primary: '#e8f5e9',
+                  secondary: '#c8e6c9',
                 },
               }),
           success: {
-            main: '#40916c',
-            light: '#52b788',
-            dark: '#2d6a4f',
+            main: '#4caf50',
+            light: '#81c784',
+            dark: '#388e3c',
           },
           info: {
-            main: '#74c69d',
-            light: '#95d5b2',
-            dark: '#52b788',
+            main: '#29b6f6',
+            light: '#4fc3f7',
+            dark: '#0288d1',
           },
           warning: {
-            main: '#d4a574',
-            light: '#e5c7a3',
-            dark: '#b8935f',
+            main: '#ffa726',
+            light: '#ffb74d',
+            dark: '#f57c00',
           },
           error: {
-            main: '#d64545',
+            main: '#ef5350',
             light: '#e57373',
-            dark: '#b71c1c',
+            dark: '#c62828',
           },
         },
         typography: {
@@ -144,18 +143,18 @@ export const ThemeContextProvider = ({ children }: { children: ReactNode }) => {
                 boxShadow: 'none',
                 '&:hover': {
                   boxShadow: mode === 'light' 
-                    ? '0 4px 12px rgba(45, 106, 79, 0.15)'
-                    : '0 4px 12px rgba(82, 183, 136, 0.25)',
+                    ? '0 4px 12px rgba(167, 201, 87, 0.3)'
+                    : '0 4px 12px rgba(106, 153, 78, 0.4)',
                 },
               },
               contained: {
                 background: mode === 'light'
-                  ? 'linear-gradient(135deg, #2d6a4f 0%, #40916c 100%)'
-                  : 'linear-gradient(135deg, #52b788 0%, #74c69d 100%)',
+                  ? 'linear-gradient(135deg, #a7c957 0%, #d4e09b 100%)'
+                  : 'linear-gradient(135deg, #386641 0%, #6a994e 100%)',
                 '&:hover': {
                   background: mode === 'light'
-                    ? 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)'
-                    : 'linear-gradient(135deg, #40916c 0%, #52b788 100%)',
+                    ? 'linear-gradient(135deg, #6a994e 0%, #a7c957 100%)'
+                    : 'linear-gradient(135deg, #1b3a1b 0%, #386641 100%)',
                 },
               },
             },
@@ -165,12 +164,12 @@ export const ThemeContextProvider = ({ children }: { children: ReactNode }) => {
               root: {
                 borderRadius: 16,
                 boxShadow: mode === 'light'
-                  ? '0 4px 20px rgba(45, 106, 79, 0.08)'
-                  : '0 4px 20px rgba(0, 0, 0, 0.3)',
+                  ? '0 4px 20px rgba(0, 0, 0, 0.08)'
+                  : '0 4px 20px rgba(0, 0, 0, 0.5)',
                 '&:hover': {
                   boxShadow: mode === 'light'
-                    ? '0 8px 32px rgba(45, 106, 79, 0.12)'
-                    : '0 8px 32px rgba(82, 183, 136, 0.2)',
+                    ? '0 8px 32px rgba(167, 201, 87, 0.2)'
+                    : '0 8px 32px rgba(106, 153, 78, 0.3)',
                 },
               },
             },
@@ -182,8 +181,8 @@ export const ThemeContextProvider = ({ children }: { children: ReactNode }) => {
               },
               colorPrimary: {
                 background: mode === 'light'
-                  ? 'linear-gradient(135deg, #52b788 0%, #74c69d 100%)'
-                  : 'linear-gradient(135deg, #74c69d 0%, #95d5b2 100%)',
+                  ? 'linear-gradient(135deg, #a7c957 0%, #d4e09b 100%)'
+                  : 'linear-gradient(135deg, #6a994e 0%, #a7c957 100%)',
               },
             },
           },
@@ -191,10 +190,10 @@ export const ThemeContextProvider = ({ children }: { children: ReactNode }) => {
             styleOverrides: {
               root: {
                 background: mode === 'light'
-                  ? 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)'
-                  : 'linear-gradient(135deg, #0a1f1a 0%, #1b4332 100%)',
+                  ? 'linear-gradient(135deg, #6a994e 0%, #a7c957 100%)'
+                  : 'linear-gradient(135deg, #0d1b0d 0%, #1a2a1a 100%)',
                 boxShadow: mode === 'light'
-                  ? '0 2px 12px rgba(27, 67, 50, 0.15)'
+                  ? '0 2px 12px rgba(106, 153, 78, 0.2)'
                   : '0 2px 12px rgba(0, 0, 0, 0.5)',
               },
             },
@@ -203,13 +202,13 @@ export const ThemeContextProvider = ({ children }: { children: ReactNode }) => {
             styleOverrides: {
               elevation1: {
                 boxShadow: mode === 'light'
-                  ? '0 2px 12px rgba(45, 106, 79, 0.08)'
-                  : '0 2px 12px rgba(0, 0, 0, 0.3)',
+                  ? '0 2px 12px rgba(0, 0, 0, 0.08)'
+                  : '0 2px 12px rgba(0, 0, 0, 0.4)',
               },
               elevation3: {
                 boxShadow: mode === 'light'
-                  ? '0 4px 20px rgba(45, 106, 79, 0.12)'
-                  : '0 4px 20px rgba(0, 0, 0, 0.4)',
+                  ? '0 4px 20px rgba(0, 0, 0, 0.12)'
+                  : '0 4px 20px rgba(0, 0, 0, 0.5)',
               },
             },
           },

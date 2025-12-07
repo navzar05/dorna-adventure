@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/context/AuthContext.tsx
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import type { AuthContextType, RegisterRequest, AuthResponse } from '../types/auth.ts';
+import type { AuthContextType, RegisterRequest, AuthResponse } from '../types/auth';
+import { getUserRolesFromToken, isAdmin as checkIsAdmin, isTokenExpired } from '../utils/jwt';
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -11,6 +14,7 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [userRoles, setUserRole] = useState<string[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
@@ -19,7 +23,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const storedToken = localStorage.getItem('token');
       
       if (storedToken) {
-        setToken(storedToken);
+        // Check if token is expired
+        if (isTokenExpired(storedToken)) {
+          // Token expired, clear it
+          localStorage.removeItem('token');
+          setToken(null);
+          setUserRole(null);
+        } else {
+          // Token valid, extract role
+          setToken(storedToken);
+          const roles = getUserRolesFromToken(storedToken);
+          setUserRole(roles);
+        }
       }
       
       setLoading(false);
@@ -31,7 +46,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (
     username: string,
     password: string,
-    // rememberMe: boolean = true
   ): Promise<AuthResponse> => {
     try {
       const response = await api.post<string>('/auth/login', {
@@ -41,12 +55,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       const token = response.data;
       
-      localStorage.setItem('token', token);
-
-      setToken(token);
+      // Extract role from token
+      const roles = getUserRolesFromToken(token);
       
+      localStorage.setItem('token', token);
+      setToken(token);
+      setUserRole(roles);
+
       return { success: true };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       return {
         success: false,
@@ -59,7 +75,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       await api.post<string>('/auth/register', userData);
       return { success: true, message: 'User registered successfully!' };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       return {
         success: false,
@@ -71,6 +86,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = (): void => {
     localStorage.removeItem('token');
     setToken(null);
+    setUserRole(null);
     navigate('/login');
   };
 
@@ -80,12 +96,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const value: AuthContextType = {
     token,
+    userRoles,
+    isAdmin: token ? checkIsAdmin(token) : false,
     login,
     register,
     logout,
     isAuthenticated: isAuthenticated(),
     loading
   };
+
+  console.log(value)
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

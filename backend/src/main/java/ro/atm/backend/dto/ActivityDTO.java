@@ -22,6 +22,7 @@ public class ActivityDTO {
     private String duration; // Formatted duration
     private Integer durationMinutes;
     private String location;
+    private LocationDetailsDTO locationDetails; // Add this field
     private CategoryDTO category;
     private Boolean active;
     private List<String> imageUrls;
@@ -40,6 +41,7 @@ public class ActivityDTO {
                 .duration(activity.getFormattedDuration())
                 .durationMinutes(activity.getDurationMinutes())
                 .location(activity.getLocation())
+                .locationDetails(LocationDetailsDTO.fromEntity(activity.getLocationDetails())) // Add this
                 .category(activity.getCategory() != null ? CategoryDTO.fromEntity(activity.getCategory()) : null)
                 .active(activity.getActive())
                 .imageUrls(activity.getMediaList().stream()

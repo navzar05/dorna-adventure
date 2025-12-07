@@ -1,19 +1,11 @@
+import { type Media } from "./media";
+
 export interface LocationDetails {
   address?: string;
   city: string;
-  country: string;
   latitude?: number;
   longitude?: number;
   postalCode?: string;
-}
-
-export interface Category {
-  id: number;
-  name: string;
-  description: string;
-  slug: string;
-  iconUrl?: string;
-  activityCount?: number;
 }
 
 export interface Activity {
@@ -28,8 +20,21 @@ export interface Activity {
   duration: string;
   durationMinutes: number;
   location: string;
+  locationDetails?: LocationDetails;
   category: Category;
   active: boolean;
   imageUrls: string[];
   videoUrls: string[];
+  mediaList?: Media[];
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  description: string;
+  slug: string;
+  iconUrl?: string;
+  activityCount?: number;
+  displayOrder?: number;
+  active?: boolean;
 }

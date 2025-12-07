@@ -1,41 +1,120 @@
+// src/main/java/ro/atm/backend/controller/UserController.java
 package ro.atm.backend.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import ro.atm.backend.dto.LoginRequest;
-import ro.atm.backend.dto.RegisterRequest;
-import ro.atm.backend.security.JwtService;
-import ro.atm.backend.service.UserService;
+import ro.atm.backend.dto.ChangePasswordRequest;
+import ro.atm.backend.dto.UpdateUserRequest;
+import ro.atm.backend.dto.UserDTO;
+import ro.atm.backend.entity.User;
+import ro.atm.backend.repo.UserRepository;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
-    private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @PostMapping("/register")
-    public String addNewUser(@RequestBody RegisterRequest registerRequest) {
-        userService.addUser(registerRequest);
-
-        return "User added successfully";
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> getCurrentUser(Authentication authentication) {
+        String username = authentication.getName();
+        return userRepository.findByUsername(username)
+                .map(UserDTO::fromEntity)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/login")
-    public String authenticateAndGetToken(@RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
-        );
-        if (authentication.isAuthenticated()) {
-            return jwtService.generateToken(loginRequest.getUsername());
-        } else {
-            throw new UsernameNotFoundException("Invalid user request!");
-        }
+    @PutMapping("/me")
+    public ResponseEntity<?> updateCurrentUser(
+            Authentication authentication,
+            @RequestBody UpdateUserRequest request) {
+
+        String username = authentication.getName();
+        Map<String, String> errorResponse = new HashMap<>();
+
+        return userRepository.findByUsername(username)
+                .map(user -> {
+                    if (!user.getEmail().equals(request.getEmail())) {
+                        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                            errorResponse.put("error", "Email is already in use");
+                            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+                        }
+                    }
+
+                    if (!user.getPhoneNumber().equals(request.getPhoneNumber())) {
+                        if (userRepository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
+                            errorResponse.put("error", "Phone number is already in use");
+                            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+                        }
+                    }
+
+                    user.setEmail(request.getEmail()); // Add this
+                    user.setFirstName(request.getFirstName());
+                    user.setLastName(request.getLastName());
+                    user.setPhoneNumber(request.getPhoneNumber());
+
+                    User updated = userRepository.save(user);
+                    return ResponseEntity.ok((Object) UserDTO.fromEntity(updated));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/me/password")
+    public ResponseEntity<Map<String, String>> changePassword(
+            Authentication authentication,
+            @RequestBody ChangePasswordRequest request) {
+
+        String username = authentication.getName();
+        Map<String, String> response = new HashMap<>();
+
+        return userRepository.findByUsername(username)
+                .map(user -> {
+                    // Verify current password
+                    if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                        response.put("error", "Current password is incorrect");
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+                    }
+
+                    // Update password
+                    user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+                    userRepository.save(user);
+
+                    response.put("message", "Password changed successfully");
+                    return ResponseEntity.ok(response);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/me")
+    public ResponseEntity<Map<String, String>> deleteAccount(
+            Authentication authentication,
+            @RequestBody Map<String, String> request) {
+
+        String username = authentication.getName();
+        String password = request.get("password");
+        Map<String, String> response = new HashMap<>();
+
+        return userRepository.findByUsername(username)
+                .map(user -> {
+                    // Verify password before deletion
+                    if (!passwordEncoder.matches(password, user.getPassword())) {
+                        response.put("error", "Password is incorrect");
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+                    }
+
+                    userRepository.delete(user);
+                    response.put("message", "Account deleted successfully");
+                    return ResponseEntity.ok(response);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 }

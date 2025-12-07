@@ -3,6 +3,8 @@ package ro.atm.backend.dto;
 import lombok.*;
 import ro.atm.backend.entity.ActivityCategory;
 
+import java.util.Collections; // Import this if you want to use Collections.emptyList()
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -22,7 +24,7 @@ public class CategoryDTO {
                 .description(category.getDescription())
                 .slug(category.getSlug())
                 .iconUrl(category.getIconUrl())
-                .activityCount(category.getActivities().size())
+                .activityCount(category.getActivities() != null ? category.getActivities().size() : 0)
                 .build();
     }
 }

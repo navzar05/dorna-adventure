@@ -3,16 +3,16 @@ package ro.atm.backend.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import ro.atm.backend.entity.Activity;
-import ro.atm.backend.entity.ActivityCategory;
-import ro.atm.backend.entity.LocationDetails;
-import ro.atm.backend.entity.Role;
+import ro.atm.backend.entity.*;
 import ro.atm.backend.repo.ActivityCategoryRepository;
 import ro.atm.backend.repo.ActivityRepository;
 import ro.atm.backend.repo.RoleRepository;
+import ro.atm.backend.repo.UserRepository;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -20,14 +20,17 @@ import java.math.BigDecimal;
 public class DataInitializer implements CommandLineRunner {
 
     private final RoleRepository roleRepository;
+    private final UserRepository userRepository;
     private final ActivityCategoryRepository categoryRepository;
     private final ActivityRepository activityRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
         initializeRoles();
-        initializeCategories();
-        initializeActivities();
+        initializeUsers();
+//        initializeCategories();
+//        initializeActivities();
     }
 
     private void initializeRoles() {
@@ -51,6 +54,58 @@ public class DataInitializer implements CommandLineRunner {
             log.info("Roles already exist, skipping initialization.");
         }
     }
+
+    private void initializeUsers() {
+        if (userRepository.count() == 0) {
+            log.info("Initializing default users...");
+
+            // Get roles
+            Role adminRole = roleRepository.findByName("ROLE_ADMIN")
+                    .orElseThrow(() -> new RuntimeException("ROLE_ADMIN not found"));
+            Role userRole = roleRepository.findByName("ROLE_USER")
+                    .orElseThrow(() -> new RuntimeException("ROLE_USER not found"));
+
+            // Create admin user
+            User admin = User.builder()
+                    .username("admin")
+                    .password(passwordEncoder.encode("admin123"))
+                    .email("admin@dornaadventure.ro") // Add email
+                    .firstName("Admin")
+                    .lastName("User")
+                    .phoneNumber("+40 700 000 001")
+                    .roles(Set.of(adminRole, userRole))
+                    .accountNonExpired(true)
+                    .accountNonLocked(true)
+                    .credentialsNonExpired(true)
+                    .enabled(true)
+                    .build();
+            userRepository.save(admin);
+            log.info("Admin user created - Username: admin, Password: admin123");
+
+            // Create a regular test user
+            User testUser = User.builder()
+                    .username("user")
+                    .password(passwordEncoder.encode("user123"))
+                    .email("user@dornaadventure.ro") // Add email
+                    .firstName("Test")
+                    .lastName("User")
+                    .phoneNumber("+40 700 000 002")
+                    .roles(Set.of(userRole))
+                    .accountNonExpired(true)
+                    .accountNonLocked(true)
+                    .credentialsNonExpired(true)
+                    .enabled(true)
+                    .build();
+            userRepository.save(testUser);
+            log.info("Test user created - Username: user, Password: user123");
+
+            log.info("Default users initialized successfully!");
+            log.warn("⚠️  WARNING: Please change the default passwords in production!");
+        } else {
+            log.info("Users already exist, skipping initialization.");
+        }
+    }
+
 
     private void initializeCategories() {
         if (categoryRepository.count() == 0) {

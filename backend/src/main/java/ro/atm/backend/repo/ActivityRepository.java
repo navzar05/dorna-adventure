@@ -26,4 +26,6 @@ public interface ActivityRepository extends JpaRepository<Activity, Long> {
 
     @Query("SELECT a FROM Activity a WHERE a.active = true AND a.maxParticipants >= :participants")
     List<Activity> findByMinimumCapacity(Integer participants);
+
+    long countByCategoryId(Long id);
 }

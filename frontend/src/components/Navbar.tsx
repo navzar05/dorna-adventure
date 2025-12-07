@@ -14,18 +14,20 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
-import NatureIcon from '@mui/icons-material/Nature';
+import LanguageIcon from '@mui/icons-material/Language';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useThemeMode } from '../context/ThemeContext';
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, logout} = useAuth();
+  const { t, i18n } = useTranslation();
+  const { isAuthenticated, logout, isAdmin } = useAuth();
   const { mode, toggleColorMode } = useThemeMode();
-  
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+  const [anchorElLang, setAnchorElLang] = React.useState<null | HTMLElement>(null);
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
@@ -35,12 +37,20 @@ const Navbar = () => {
     setAnchorElUser(event.currentTarget);
   };
 
+  const handleOpenLangMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElLang(event.currentTarget);
+  };
+
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
   };
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
+  };
+
+  const handleCloseLangMenu = () => {
+    setAnchorElLang(null);
   };
 
   const handleLogout = () => {
@@ -54,12 +64,32 @@ const Navbar = () => {
     handleCloseUserMenu();
   };
 
+  const changeLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+    localStorage.setItem('language', lang);
+    handleCloseLangMenu();
+  };
+
+  const currentLanguage = i18n.language;
+
   return (
     <AppBar position="static">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           {/* Desktop Logo */}
-          <NatureIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
+          <Box
+            component="img"
+            src="/logo.png"
+            alt="Dorna Adventure Logo"
+            sx={{
+              display: { xs: 'none', md: 'flex' },
+              height: 80,
+              width: 'auto',
+              mr: 2,
+              cursor: 'pointer',
+            }}
+            onClick={() => navigate('/')}
+          />
           <Typography
             variant="h6"
             noWrap
@@ -76,7 +106,7 @@ const Navbar = () => {
               cursor: 'pointer',
             }}
           >
-            Dorna Adventure
+            {t('nav.appName')}
           </Typography>
 
           {/* Mobile Menu */}
@@ -107,26 +137,37 @@ const Navbar = () => {
               onClose={handleCloseNavMenu}
               sx={{ display: { xs: 'block', md: 'none' } }}
             >
-              {isAuthenticated && (
                 <MenuItem onClick={() => { handleCloseNavMenu(); navigate('/home'); }}>
-                  <Typography sx={{ textAlign: 'center' }}>Activities</Typography>
+                  <Typography sx={{ textAlign: 'center' }}>{t('nav.activities')}</Typography>
                 </MenuItem>
-              )}
-              {!isAuthenticated && (
-                <>
-                  <MenuItem onClick={() => { handleCloseNavMenu(); navigate('/login'); }}>
-                    <Typography sx={{ textAlign: 'center' }}>Login</Typography>
-                  </MenuItem>
-                  <MenuItem onClick={() => { handleCloseNavMenu(); navigate('/register'); }}>
-                    <Typography sx={{ textAlign: 'center' }}>Register</Typography>
-                  </MenuItem>
-                </>
+                <MenuItem key="login" onClick={() => { handleCloseNavMenu(); navigate('/login'); }}>
+                  <Typography sx={{ textAlign: 'center' }}>{t('nav.login')}</Typography>
+                </MenuItem>
+                <MenuItem key="register" onClick={() => { handleCloseNavMenu(); navigate('/register'); }}>
+                  <Typography sx={{ textAlign: 'center' }}>{t('nav.register')}</Typography>
+                </MenuItem>
+              {isAdmin && (
+                <MenuItem key="admin" onClick={() => { handleCloseNavMenu(); navigate('/admin'); }}>
+                  <Typography sx={{ textAlign: 'center' }}>{t('admin.title')}</Typography>
+                </MenuItem>
               )}
             </Menu>
           </Box>
 
           {/* Mobile Logo */}
-          <NatureIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
+          <Box
+            component="img"
+            src="/logo.png"
+            alt="Dorna Adventure Logo"
+            sx={{
+              display: { xs: 'flex', md: 'none' },
+              height: 76,
+              width: 'auto',
+              mr: 1,
+              cursor: 'pointer',
+            }}
+            onClick={() => navigate('/')}
+          />
           <Typography
             variant="h6"
             noWrap
@@ -149,19 +190,68 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {isAuthenticated && (
+            
               <Button
                 onClick={() => navigate('/home')}
-                sx={{ my: 2, color: 'white', display: 'block' }}
+                color="inherit"
+                sx={{ my: 2, display: 'block' }}
               >
-                Activities
+                {t('nav.activities')}
+              </Button>
+   
+            {isAdmin && (
+              <Button
+                onClick={() => navigate('/admin')}
+                color="inherit"
+                sx={{ my: 2, display: 'block' }}
+              >
+                {t('admin.title')}
               </Button>
             )}
           </Box>
 
+          {/* Language Toggle */}
+          <Box sx={{ mr: 1 }}>
+            <Tooltip title="Language / Limbă">
+              <IconButton onClick={handleOpenLangMenu} color="inherit">
+                <LanguageIcon />
+              </IconButton>
+            </Tooltip>
+            <Menu
+              anchorEl={anchorElLang}
+              open={Boolean(anchorElLang)}
+              onClose={handleCloseLangMenu}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+            >
+              <MenuItem 
+                onClick={() => changeLanguage('en')}
+                selected={currentLanguage === 'en'}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  🇬🇧 English
+                </Box>
+              </MenuItem>
+              <MenuItem 
+                onClick={() => changeLanguage('ro')}
+                selected={currentLanguage === 'ro'}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  🇷🇴 Română
+                </Box>
+              </MenuItem>
+            </Menu>
+          </Box>
+
           {/* Theme Toggle Button */}
           <Box sx={{ mr: 2 }}>
-            <Tooltip title={mode === 'light' ? 'Dark mode' : 'Light mode'}>
+            <Tooltip title={mode === 'light' ? t('theme.dark') : t('theme.light')}>
               <IconButton onClick={toggleColorMode} color="inherit">
                 {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
               </IconButton>
@@ -174,14 +264,13 @@ const Navbar = () => {
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                   <Avatar 
-                    // alt={user?.email || 'User'} 
-                    alt = 'User'
+                    alt='User'
                     sx={{ 
                       bgcolor: 'secondary.main',
                       color: 'primary.dark' 
                     }}
                   >
-                    {/* {user?.email?.charAt(0).toUpperCase() || 'U'} */}
+                    U
                   </Avatar>
                 </IconButton>
               </Tooltip>
@@ -202,13 +291,13 @@ const Navbar = () => {
                 onClose={handleCloseUserMenu}
               >
                 <MenuItem onClick={() => handleMenuClick('/profile')}>
-                  <Typography sx={{ textAlign: 'center' }}>Profile</Typography>
+                  <Typography sx={{ textAlign: 'center' }}>{t('nav.profile')}</Typography>
                 </MenuItem>
                 <MenuItem onClick={() => handleMenuClick('/account')}>
-                  <Typography sx={{ textAlign: 'center' }}>Account</Typography>
+                  <Typography sx={{ textAlign: 'center' }}>{t('nav.account')}</Typography>
                 </MenuItem>
                 <MenuItem onClick={handleLogout}>
-                  <Typography sx={{ textAlign: 'center' }}>Logout</Typography>
+                  <Typography sx={{ textAlign: 'center' }}>{t('nav.logout')}</Typography>
                 </MenuItem>
               </Menu>
             </Box>
@@ -226,7 +315,7 @@ const Navbar = () => {
                   }
                 }}
               >
-                Login
+                {t('nav.login')}
               </Button>
               <Button 
                 color="inherit" 
@@ -239,7 +328,7 @@ const Navbar = () => {
                   }
                 }}
               >
-                Register
+                {t('nav.register')}
               </Button>
             </Box>
           )}

@@ -1,0 +1,219 @@
+{
+  "nav": {
+    "home": "Acasă",
+    "activities": "Activități",
+    "login": "Autentificare",
+    "register": "Înregistrare",
+    "logout": "Deconectare",
+    "profile": "Profil",
+    "account": "Cont",
+    "appName": "Dorna adventure"
+  },
+  "footer": {
+    "description": "Ghidul tău de încredere pentru aventuri de neuitat în Bucovina. Explorează frumusețea naturii cu noi.",
+    "quickLinks": "Link-uri rapide",
+    "aboutUs": "Despre noi",
+    "contact": "Contact",
+    "terms": "Termeni și condiții",
+    "privacy": "Politica de confidențialitate",
+    "rights": "Toate drepturile rezervate."
+  },
+  "home": {
+    "title": "Aventura te așteaptă",
+    "subtitle": "Descoperă experiențe unice",
+    "searchPlaceholder": "Caută activități...",
+    "filterCategory": "Categorie",
+    "allCategories": "Toate Categoriile",
+    "noResults": "Nu s-au găsit activități conform criteriilor."
+  },
+  "landing": {
+    "title": "Dorna adventure",
+    "subtitle": "Ghidul tău din Bucovina",
+    "exploreActivities": "Explorează activități",
+    "getStarted": "Începe Acum"
+  },
+  "activity": {
+    "viewDetails": "Vezi Detalii",
+    "bookNow": "Rezervă acum",
+    "duration": "Durată",
+    "groupSize": "Mărime grup",
+    "location": "Locație",
+    "deposit": "Avans",
+    "participants": "participanți",
+    "perPerson": "/persoană",
+    "videos": "Video-uri",
+    "available": "Disponibil",
+    "backToActivities": "Înapoi la activități"
+  },
+  "account": {
+    "email": "Email",
+    "title": "Setări Cont",
+    "profileSection": "Informații Profil",
+    "passwordSection": "Schimbă Parola",
+    "dangerZone": "Zonă Periculoasă",
+    "username": "Nume Utilizator",
+    "usernameHelper": "Numele de utilizator nu poate fi schimbat",
+    "firstName": "Prenume",
+    "lastName": "Nume",
+    "phoneNumber": "Număr Telefon",
+    "currentPassword": "Parola Curentă",
+    "newPassword": "Parola Nouă",
+    "confirmPassword": "Confirmă Parola Nouă",
+    "password": "Parolă",
+    "saveChanges": "Salvează Modificările",
+    "changePassword": "Schimbă Parola",
+    "deleteAccount": "Șterge Contul",
+    "deleteWarning": "Ștergerea contului este permanentă și nu poate fi anulată. Toate datele tale vor fi șterse definitiv.",
+    "confirmDelete": "Confirmă Ștergerea Contului",
+    "deleteConfirmText": "Sigur vrei să îți ștergi contul? Această acțiune nu poate fi anulată. Te rugăm să introduci parola pentru confirmare.",
+    "messages": {
+      "profileUpdated": "Profil actualizat cu succes",
+      "passwordChanged": "Parolă schimbată cu succes",
+      "accountDeleted": "Cont șters cu succes"
+    },
+    "errors": {
+      "loadFailed": "Eroare la încărcarea datelor",
+      "updateFailed": "Eroare la actualizarea profilului",
+      "passwordMismatch": "Parolele nu se potrivesc",
+      "passwordTooShort": "Parola trebuie să aibă cel puțin 6 caractere",
+      "passwordChangeFailed": "Eroare la schimbarea parolei",
+      "passwordRequired": "Parola este obligatorie",
+      "deleteFailed": "Eroare la ștergerea contului"
+    }
+  },
+  "auth": {
+    "username": "Nume utilizator",
+    "email": "Adresă Email",
+    "password": "Parolă",
+    "confirmPassword": "Confirmă Parola",
+    "rememberMe": "Ține-mă minte",
+    "loginTitle": "Autentificare",
+    "registerTitle": "Înregistrare",
+    "loginButton": "Conectare",
+    "signingIn": "Se conectează...",
+    "registerButton": "Înregistrare",
+    "noAccount": "Nu ai cont?",
+    "hasAccount": "Ai deja cont?",
+    "registerHere": "Înregistrează-te aici",
+    "loginHere": "Autentifică-te aici",
+    "loginFailed": "Autentificarea a eșuat. Verifică datele introduse.",
+    "registerFailed": "Înregistrarea a eșuat. Te rugăm să încerci din nou.",
+    "passwordMismatch": "Parolele nu coincid",
+    "sessionExpired": "Sesiunea ta a expirat. Te rugăm să te autentifici din nou.",
+    "errorOccurred": "A apărut o eroare"
+  },
+  "common": {
+    "loading": "Se încarcă...",
+    "error": "Eroare",
+    "success": "Succes"
+  },
+  "theme": {
+    "light": "Mod luminos",
+    "dark": "Mod întunecat"
+  },
+  "admin": {
+    "title": "Panou Admin",
+    "activities": "Activități",
+    "categories": "Categorii",
+    "addActivity": "Adaugă Activitate",
+    "editActivity": "Editează Activitate",
+    "deleteActivity": "Șterge Activitate",
+    "addCategory": "Adaugă Categorie",
+    "editCategory": "Editează Categorie",
+    "deleteCategory": "Șterge Categorie",
+    "previous": "Înapoi",
+    "next": "Înainte",
+    "cancel": "Anulează",
+    "finish": "Finalizează",
+    "edit": "Editează",
+    "delete": "Șterge",
+    
+    "activitySteps": {
+      "basicInfo": "Informații de Bază",
+      "details": "Detalii",
+      "media": "Media"
+    },
+    
+    "activityFields": {
+      "name": "Nume",
+      "description": "Descriere",
+      "category": "Categorie",
+      "minParticipants": "Participanți Minim",
+      "maxParticipants": "Participanți Maxim",
+      "pricePerPerson": "Preț per Persoană",
+      "depositPercent": "Procent Avans",
+      "durationMinutes": "Durată (minute)",
+      "location": "Locație",
+      "locationSection": "Detalii Locație",
+      "locationHelper": "ex., Brașov, România",
+      "city": "Oraș",
+      "address": "Adresă",
+      "latitude": "Latitudine",
+      "longitude": "Longitudine",
+      "postalCode": "Cod Poștal",
+      "active": "Activ",
+      "uploadImages": "Încarcă Imagini",
+      "uploadVideos": "Încarcă Video-uri",
+      "images": "Imagini",
+      "videos": "Video-uri",
+      "addImages": "Adaugă Imagini",
+      "addVideos": "Adaugă Video-uri",
+      "noImages": "Nu există imagini adăugate. Apasă 'Adaugă Imagini' pentru a încărca.",
+      "noVideos": "Nu există video-uri adăugate. Apasă 'Adaugă Video-uri' pentru a încărca.",
+      "mediaNote": "Fișierele vor fi încărcate când salvezi activitatea. Formate acceptate: JPG, PNG, GIF pentru imagini; MP4, WebM pentru video-uri."
+    },
+    
+    "categoryFields": {
+      "name": "Nume",
+      "description": "Descriere",
+      "slug": "Slug",
+      "displayOrder": "Ordine Afișare",
+      "active": "Activ"
+    },
+    
+    "dataGrid": {
+      "id": "ID",
+      "name": "Nume",
+      "category": "Categorie",
+      "price": "Preț",
+      "participants": "Participanți",
+      "duration": "Durată",
+      "location": "Locație",
+      "active": "Activ",
+      "actions": "Acțiuni",
+      "slug": "Slug",
+      "order": "Ordine"
+    },
+    
+    "media": {
+      "existingImages": "Imagini Existente",
+      "existingVideos": "Video-uri Existente",
+      "addNewImages": "Adaugă Imagini Noi",
+      "addNewVideos": "Adaugă Video-uri Noi",
+      "addImagesButton": "Adaugă Imagini",
+      "addVideosButton": "Adaugă Video-uri",
+      "noExistingImages": "Nu există imagini",
+      "noExistingVideos": "Nu există video-uri",
+      "image": "Imagine",
+      "video": "Video",
+      "activityMedia": "Media activitate",
+      "undo": "Anulează"
+    },
+    
+    "messages": {
+      "activityCreated": "Activitate creată cu succes",
+      "activityUpdated": "Activitate actualizată cu succes",
+      "activityDeleted": "Activitate ștearsă cu succes",
+      "categoryCreated": "Categorie creată cu succes",
+      "categoryUpdated": "Categorie actualizată cu succes",
+      "categoryDeleted": "Categorie ștearsă cu succes",
+      "confirmDelete": "Sigur vrei să ștergi acest element?",
+      "error": "A apărut o eroare. Te rugăm să încerci din nou.",
+      "uploadingFiles": "Se încarcă fișierele",
+      "filesUploaded": "fișiere încărcate",
+      "failedFiles": "Fișiere eșuate",
+      "filesUploadedSuccessfully": "fișiere încărcate cu succes",
+      "mediaDeleteWarning": "{{count}} element(e) media vor fi șterse permanent când salvezi."
+    }
+  }
+}

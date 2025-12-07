@@ -1,4 +1,3 @@
-// src/services/activityService.ts
 import api from './api';
 import type { Activity } from '../types/activity';
 
@@ -9,4 +8,13 @@ export const activityService = {
   
   getActivitiesByCategory: (categoryId: number) => 
     api.get<Activity[]>(`/activities/category/${categoryId}`),
+  
+  createActivity: (activity: Partial<Activity>) => 
+    api.post<Activity>('/activities', activity),
+  
+  updateActivity: (id: number, activity: Partial<Activity>) => 
+    api.put<Activity>(`/activities/${id}`, activity),
+  
+  deleteActivity: (id: number) => 
+    api.delete(`/activities/${id}`),
 };
