@@ -23,6 +23,7 @@ public class UserService {
 
     public RegisterRequest addUser(RegisterRequest registerRequest) {
         User user = new User();
+        user.setEmail(registerRequest.getEmail());
         user.setUsername(registerRequest.getUsername());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setFirstName(registerRequest.getFirstName());

@@ -4,7 +4,6 @@ WORKDIR /app
 
 # Copiem tot codul sursă în container
 COPY . .
-
 # Compilăm aplicația (creăm folderul target și .jar-ul)
 # -DskipTests e recomandat ca să meargă build-ul mai repede
 RUN mvn clean package -DskipTests
