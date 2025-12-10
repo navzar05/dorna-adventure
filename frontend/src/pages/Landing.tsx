@@ -10,14 +10,6 @@ export default function Landing() {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
 
-  const handleExplore = () => {
-    if (isAuthenticated) {
-      navigate('/home');
-    } else {
-      navigate('/login');
-    }
-  };
-
   return (
     <Box
       style={{
@@ -122,7 +114,7 @@ export default function Landing() {
           <Button
             variant="contained"
             size="large"
-            onClick={handleExplore}
+            onClick={() => navigate('/home')}
             startIcon={<ExploreIcon />}
             sx={{
               py: 2,
