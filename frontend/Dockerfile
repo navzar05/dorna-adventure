@@ -28,13 +28,11 @@ FROM caddy
 WORKDIR /app
 
 # Copy Caddyfile to the container image.
-COPY Caddyfile ./
+COPY Caddyfile /etc/caddy/Caddyfile
 
 # Copy local code to the container image.
-RUN caddy fmt Caddyfile --overwrite
-
+RUN caddy fmt /etc/caddy/Caddyfile --overwrite
 # Copy files to the container image.
-COPY --from=build /app/dist ./dist
-
+COPY --from=build /app/dist /app/dist
 # Use Caddy to run/serve the app
 CMD ["caddy", "run", "--config", "Caddyfile", "--adapter", "caddyfile"]
