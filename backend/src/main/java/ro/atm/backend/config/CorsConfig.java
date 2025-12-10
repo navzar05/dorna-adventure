@@ -16,7 +16,7 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:5174", "http://192.168.1.135:5174", "http://188.25.208.32:6969"));
+        configuration.setAllowedOrigins(List.of("http://localhost:5174", "https://frontend-production-cca2.up.railway.app"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
