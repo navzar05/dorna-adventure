@@ -8,7 +8,7 @@ import type {
 } from '../types/payment';
 
 // Ensure this matches your backend URL exactly (check port 8080 vs 8081 etc)
-const API_URL = 'http://localhost:8080/api/v1';
+const API_URL = 'http://dorna-adventure-production.up.railway.app/api/v1';
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
