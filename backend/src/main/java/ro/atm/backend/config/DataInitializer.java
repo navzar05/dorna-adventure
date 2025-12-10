@@ -6,12 +6,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import ro.atm.backend.entity.*;
-import ro.atm.backend.repo.ActivityCategoryRepository;
-import ro.atm.backend.repo.ActivityRepository;
-import ro.atm.backend.repo.RoleRepository;
-import ro.atm.backend.repo.UserRepository;
+import ro.atm.backend.repo.*;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.Set;
 
 @Component
@@ -23,6 +22,7 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final ActivityCategoryRepository categoryRepository;
     private final ActivityRepository activityRepository;
+    private final WorkHoursRepository workHoursRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -31,6 +31,25 @@ public class DataInitializer implements CommandLineRunner {
         initializeUsers();
 //        initializeCategories();
 //        initializeActivities();
+    }
+
+    private void initializeWorkHours() {
+        if (workHoursRepository.count() == 0) {
+            log.info("Initializing default work hours...");
+
+            for (DayOfWeek day : DayOfWeek.values()) {
+                if (day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY) {
+                    workHoursRepository.save(WorkHours.builder()
+                            .dayOfWeek(day)
+                            .startTime(LocalTime.of(9, 0))
+                            .endTime(LocalTime.of(17, 0))
+                            .active(true)
+                            .build());
+                }
+            }
+
+            log.info("Work hours initialized successfully!");
+        }
     }
 
     private void initializeRoles() {
@@ -46,7 +65,7 @@ public class DataInitializer implements CommandLineRunner {
             roleRepository.save(adminRole);
 
             Role moderatorRole = new Role();
-            moderatorRole.setName("ROLE_MODERATOR");
+            moderatorRole.setName("ROLE_EMPLOYEE");
             roleRepository.save(moderatorRole);
 
             log.info("Roles initialized successfully!");

@@ -1,58 +1,99 @@
 {
   "nav": {
+    "appName": "DORNA ADVENTURE",
     "home": "Home",
     "activities": "Activities",
+    "about": "About",
+    "contact": "Contact",
     "login": "Login",
     "register": "Register",
     "logout": "Logout",
-    "profile": "Profile",
     "account": "Account",
-    "appName": "Dorna Adventure"
+    "myBookings": "My Bookings"
+  },
+  
+  "theme": {
+    "light": "Light Mode",
+    "dark": "Dark Mode"
   },
   "footer": {
-    "description": "Your trusted guide for unforgettable adventures in Bucovina. Explore the beauty of nature with us.",
+    "description": "Discover amazing outdoor activities and unforgettable experiences in the heart of Bucovina, Romania's most beautiful region.",
     "quickLinks": "Quick Links",
     "aboutUs": "About Us",
     "contact": "Contact",
     "terms": "Terms & Conditions",
     "privacy": "Privacy Policy",
-    "rights": "All rights reserved."
-  },
-  "home": {
-    "title": "Adventure awaits",
-    "subtitle": "Discover unique experiences",
-    "searchPlaceholder": "Search activities...",
-    "filterCategory": "Category",
-    "allCategories": "All Categories",
-    "noResults": "No activities found matching your criteria."
+    "rights": "All rights reserved.",
+    "followUs": "Follow Us",
+    "getInTouch": "Get In Touch"
   },
   "landing": {
     "title": "Dorna Adventure",
-    "subtitle": "Your guide in Bucovina",
-    "exploreActivities": "Explore Activities",
-    "getStarted": "Get Started"
+    "subtitle": "Your guide from Bucovina",
+    "explore": "Explore activities",
+    "getStarted": "Sign up",
+    "welcome": "Welcome to Bucovina",
+    "description": "Discover amazing outdoor activities and unforgettable experiences in the heart of Romania's most beautiful region."
   },
-  "activity": {
+  
+  "home": {
+    "title": "Discover Amazing Activities",
+    "subtitle": "Explore unique experiences in Bucovina",
+    "noActivities": "No activities available at the moment.",
+    "loading": "Loading activities...",
+    "error": "Failed to load activities",
     "viewDetails": "View Details",
-    "bookNow": "Book Now",
-    "duration": "Duration",
-    "groupSize": "Group Size",
-    "location": "Location",
-    "deposit": "Deposit",
-    "participants": "participants",
-    "perPerson": "/person",
-    "videos": "Videos",
-    "available": "Available",
-    "backToActivities": "Back to Activities"
+    "bookNow": "Book Now"
   },
+  
+  "auth": {
+    "login": {
+      "title": "Login",
+      "signingIn": "You're signing in...",
+      "subtitle": "Welcome back! Please login to your account.",
+      "username": "Username",
+      "password": "Password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "loginButton": "Login",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "success": "Logged in successfully",
+      "error": "Invalid username or password"
+    },
+    "register": {
+      "title": "Register",
+      "subtitle": "Create your account to start booking activities.",
+      "username": "Username",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "phoneNumber": "Phone Number",
+      "registerButton": "Register",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "success": "Account created successfully",
+      "error": "Registration failed. Please try again.",
+      "passwordMismatch": "Passwords do not match",
+      "usernameRequired": "Username is required",
+      "emailRequired": "Email is required",
+      "passwordRequired": "Password is required",
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "phoneRequired": "Phone number is required"
+    }
+  },
+  
   "account": {
-    "email": "Email",
     "title": "Account Settings",
     "profileSection": "Profile Information",
     "passwordSection": "Change Password",
     "dangerZone": "Danger Zone",
     "username": "Username",
     "usernameHelper": "Username cannot be changed",
+    "email": "Email",
     "firstName": "First Name",
     "lastName": "Last Name",
     "phoneNumber": "Phone Number",
@@ -66,11 +107,13 @@
     "deleteWarning": "Deleting your account is permanent and cannot be undone. All your data will be permanently removed.",
     "confirmDelete": "Confirm Account Deletion",
     "deleteConfirmText": "Are you sure you want to delete your account? This action cannot be undone. Please enter your password to confirm.",
+    
     "messages": {
       "profileUpdated": "Profile updated successfully",
       "passwordChanged": "Password changed successfully",
       "accountDeleted": "Account deleted successfully"
     },
+    
     "errors": {
       "loadFailed": "Failed to load user data",
       "updateFailed": "Failed to update profile",
@@ -81,37 +124,136 @@
       "deleteFailed": "Failed to delete account"
     }
   },
-  "auth": {
-    "username": "Username",
-    "email": "Email Address",
-    "password": "Password",
-    "confirmPassword": "Confirm Password",
-    "rememberMe": "Remember me",
-    "loginTitle": "Login",
-    "registerTitle": "Register",
-    "loginButton": "Sign In",
-    "signingIn": "Signing In...",
-    "registerButton": "Register",
-    "noAccount": "Don't have an account?",
-    "hasAccount": "Already have an account?",
-    "registerHere": "Register here",
-    "loginHere": "Login here",
-    "loginFailed": "Login failed. Please check your credentials.",
-    "registerFailed": "Registration failed. Please try again.",
-    "passwordMismatch": "Passwords do not match",
-    "sessionExpired": "Your session has expired. Please login again.",
-    "errorOccurred": "An error occurred"
+  "activity": {
+    "participants": "Participants",
+    "perPerson": "/per person",
+    "viewDetails": "See details"
   },
-  "common": {
-    "loading": "Loading...",
-    "error": "Error",
-    "success": "Success"
+  "activityDetail": {
+    "backToActivities": "Back to Activities",
+    "available": "Available",
+    "notAvailable": "This activity is currently not available",
+    "person": "person",
+    "duration": "Duration",
+    "groupSize": "Group Size",
+    "participants": "participants",
+    "location": "Location",
+    "deposit": "Deposit",
+    "locationDetails": "Location Details",
+    "city": "City",
+    "address": "Address",
+    "postalCode": "Postal Code",
+    "coordinates": "Coordinates",
+    "photo": "Photo",
+    "photos": "Photos",
+    "video": "Video",
+    "videoSingular": "Video",
+    "videos": "Videos",
+    "videoNotSupported": "Your browser does not support the video tag.",
+    "loginRequired": "Please login to book this activity",
+    "loginToBook": "Login required to book",
+    "loadError": "Failed to load activity details. Please try again later.",
+    "notFound": "Activity not found"
   },
-  "theme": {
-    "light": "Light mode",
-    "dark": "Dark mode"
+  
+  "booking": {
+    "title": "Book Activity",
+    "selectDate": "Select Date",
+    "selectTime": "Select Time",
+    "participants": "Number of Participants",
+    "participantsRange": "participants",
+    "notes": "Additional Notes",
+    "notesPlaceholder": "Any special requests or information...",
+    "priceSummary": "Price Summary",
+    "totalPrice": "Total Price",
+    "depositRequired": "Deposit Required",
+    "confirmBooking": "Confirm Booking",
+    "success": "Booking created successfully!",
+    "noSlotsAvailable": "No time slots available for the selected date.",
+    "bookNow": "Book Now",
+    "updatingAvailability": "Updating availability...",
+    "availabilityBasedOnParticipants": "Time slots shown are available for {{count}} participant(s). Change the number of participants to see updated availability.",
+    "availabilityBasedOnParticipants_plural": "Time slots shown are available for {{count}} participants. Change the number of participants to see updated availability.",
+    
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    
+    "errors": {
+      "selectDateTime": "Please select both date and time",
+      "loadSlotsFailed": "Failed to load available time slots",
+      "bookingFailed": "Failed to create booking. Please try again."
+    }
   },
+  
+  "myBookings": {
+    "title": "My Bookings",
+    "subtitle": "View and manage your activity bookings",
+    "noBookings": "You don't have any bookings yet.",
+    "exploreActivities": "Explore Activities",
+    "activityName": "Activity",
+    "date": "Date",
+    "time": "Time",
+    "participants": "Participants",
+    "totalPrice": "Total Price",
+    "deposit": "Deposit Paid",
+    "status": "Status",
+    "employee": "Guide",
+    "notes": "Notes",
+    "cancel": "Cancel Booking",
+    "cancelBooking": "Cancel Booking",
+    "viewActivity": "View Activity",
+    "confirmCancel": "Are you sure you want to cancel this booking?",
+    "cancelled": "Booking cancelled successfully",
+    "cancelError": "Failed to cancel booking",
+    "loadError": "Failed to load bookings",
+    "waitingApproval": "Waiting for approval",
+    "paymentDeadline": "Pay deposit {{time}}",
+    "paymentExpired": "Payment deadline passed. Booking will be cancelled."
+  },
+  
   "admin": {
+    "settings": {
+      "title": "Settings",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "saveSuccess": "Settings saved successfully",
+      "saveError": "Failed to save settings",
+      "loadError": "Failed to load settings",
+      
+      "companyInfo": "Company Information",
+      "companyName": "Company Name",
+      "companyDescription": "Description",
+      
+      "contactInfo": "Contact Information",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      
+      "socialMedia": "Social Media",
+      "facebook": "Facebook URL",
+      "instagram": "Instagram URL",
+      "twitter": "Twitter URL",
+      
+      "legalPages": "Legal Pages",
+      "aboutUs": "About Us URL",
+      "terms": "Terms & Conditions URL",
+      "privacy": "Privacy Policy URL",
+      
+      "optional": "Optional",
+      "urlHint": "Relative (/page) or absolute URL (https://...)",
+      
+      "validation": {
+        "companyNameRequired": "Company name is required",
+        "invalidEmail": "Invalid email address",
+        "invalidPhone": "Invalid phone number",
+        "invalidUrl": "Invalid URL format",
+        "fixErrors": "Please fix the errors before saving"
+      }
+    },
     "title": "Admin Panel",
     "activities": "Activities",
     "categories": "Categories",
@@ -125,9 +267,61 @@
     "next": "Next",
     "cancel": "Cancel",
     "finish": "Finish",
+    "save": "Save",
     "edit": "Edit",
     "delete": "Delete",
+
+    "location": {
+      "parseFromMaps": "Parse from Google Maps",
+      "pasteUrl": "Paste a Google Maps URL to automatically extract location details",
+      "howToGetUrl": "How to get the correct Google Maps URL:",
+      "step1": "Open Google Maps and find your location",
+      "step2": "Right-click on the exact location on the map",
+      "step3": "Copy the coordinates or copy the URL from your browser's address bar (not the share link)",
+      "parse": "Parse",
+      "urlRequired": "Please enter a Google Maps URL",
+      "invalidUrl": "Cannot find coordinates in the URL. Please copy the URL from the browser's address bar (e.g., https://www.google.com/maps/@47.1585,27.6014,15z)",
+      "geocodeFailed": "Failed to retrieve address details. Please try again.",
+      "parseSuccess": "Location details extracted successfully!",
+      "parseError": "Error parsing location. Please try again.",
+      "autoFilled": "Location details are automatically filled from Google Maps URL"
+    },
+    "validation": {
+      "requiredFields": "Please fill in all required fields",
+      "participantsPositive": "Number of participants must be positive",
+      "minMaxParticipants": "Minimum participants cannot be greater than maximum",
+      "pricePositive": "Price must be positive",
+      "depositRange": "Deposit percentage must be between 0 and 100",
+      "durationPositive": "Duration must be at least 1 minute",
+      "categoryNameRequired": "Category name is required",
+      "categorySlugRequired": "Category slug is required",
+      "maxParticipantsRequired": "Maximum participants must be at least 1"
+    },
+    "payment": {
+    "payDeposit": "Pay Deposit",
+    "payRemaining": "Pay Remaining",
+    "payFull": "Pay in Full",
+    "payCash": "Pay Cash",
+    "amount": "Amount",
+    "processing": "Processing...",
+    "pay": "Pay Now",
+    "success": "Payment successful!",
+    "error": "Payment failed. Please try again.",
+    "initError": "Failed to initialize payment",
+    "progress": "Payment Progress",
+    "remaining": "Remaining",
+    "willPayCash": "Will pay remaining in cash",
+    "markedCash": "Marked to pay cash successfully",
+    "markCashError": "Failed to mark as cash payment",
     
+    "status": {
+      "unpaid": "Unpaid",
+      "deposit_paid": "Deposit Paid",
+      "fully_paid": "Fully Paid",
+      "partially_refunded": "Partially Refunded",
+      "fully_refunded": "Fully Refunded"
+    }
+  },
     "activitySteps": {
       "basicInfo": "Basic Information",
       "details": "Details",
@@ -164,13 +358,17 @@
     },
     
     "categoryFields": {
-      "name": "Name",
+      "name": "Category Name",
       "description": "Description",
-      "slug": "Slug",
+      "slug": "URL Slug",
+      "slugHelp": "URL-friendly identifier (e.g., water-sports)",
       "displayOrder": "Display Order",
-      "active": "Active"
+      "displayOrderHelp": "Lower numbers appear first",
+      "active": "Active",
+      "maxParticipantsPerGuide": "Max Participants Per Guide",
+      "maxParticipantsHelp": "Maximum number of participants a single guide can handle across multiple activities",
+      "maxParticipantsExplanation": "A guide can lead multiple activities at the same time if they are in the same category, at the same location, and the total participants don't exceed this limit."
     },
-    
     "dataGrid": {
       "id": "ID",
       "name": "Name",
@@ -200,6 +398,105 @@
       "undo": "Undo"
     },
     
+    "employees": {
+      "title": "Employees",
+      "add": "Add Employee",
+      "edit": "Edit Employee",
+      "delete": "Delete Employee",
+      "username": "Username",
+      "usernameHelper": "Username cannot be changed",
+      "password": "Password",
+      "email": "Email",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "phoneNumber": "Phone Number",
+      "enabled": "Enabled",
+      "created": "Employee created successfully",
+      "updated": "Employee updated successfully",
+      "deleted": "Employee deleted successfully"
+    },
+    
+    "workHours": {
+      "title": "Work Hours",
+      "description": "Configure business hours for each day of the week. Activities can only be booked during these hours.",
+      "open": "Open",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "saved": "Work hours saved successfully",
+      "saveError": "Failed to save work hours",
+      "loadError": "Failed to load work hours",
+      
+      "days": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday"
+      }
+    },
+    
+    "bookings": {
+      "paymentSkipped": "Booking created. You can pay the deposit later from My Bookings.",
+      "title": "Bookings Management",
+      "activityName": "Activity",
+      "customerName": "Customer",
+      "employeeName": "Employee/Guide",
+      "date": "Date",
+      "time": "Time",
+      "participants": "Participants",
+      "totalPrice": "Total Price",
+      "deposit": "Deposit",
+      "status": "Status",
+      "notes": "Notes",
+      "noEmployee": "Not assigned",
+      "confirm": "Confirm Booking",
+      "reject": "Reject Booking",
+      "changeEmployee": "Change Employee",
+      "selectEmployee": "Select Employee",
+      "changeEmployeeButton": "Change Employee",
+      "confirmed": "Booking confirmed successfully",
+      "rejected": "Booking rejected successfully",
+      "employeeChanged": "Employee changed successfully",
+      "confirmError": "Failed to confirm booking",
+      "rejectError": "Failed to reject booking",
+      "employeeChangeError": "Failed to change employee. The employee might not be available for this time slot.",
+      "loadError": "Failed to load bookings",
+      "confirmReject": "Are you sure you want to reject this booking? This action cannot be undone.",
+      "approvalInfo": "Pending bookings require your approval. Users have 24 hours to pay after confirmation.",
+      "paymentStatus": "Payment Status",
+      "paymentDeadline": "Pay by {{time}}",
+      "paymentDeadlineSoon": "Expires {{time}}!",
+      "paymentExpired": "Payment expired",
+      "createBooking": "Create Booking",
+      "createBookingButton": "Create",
+      "bookingCreated": "Booking created successfully",
+      "selectActivity": "Select Activity",
+      "selectActivityDate": "Please select an activity and date first",
+      "customerInfo": "Customer Information",
+      "bookingDetails": "Booking Details",
+      "guestName": "Name",
+      "guestPhone": "Phone",
+      "guestEmail": "Email (optional)",
+      "guestInfoRequired": "Name and phone are required",
+      "swapEmployees": "Swap Employees",
+      "swapNotPossible": "Employee swap not possible",
+      "swapWarning": "This will swap the employees between two bookings. Are you sure?",
+      "employeeSwap": "Employee Swap",
+      "currentEmployee": "Current Employee",
+      "newEmployee": "New Employee",
+      "willTakeOver": "will take over",
+      "currentBooking": "the current booking",
+      "confirmSwap": "Confirm Swap",
+      "employeesSwapped": "Employees swapped successfully",
+      "swapError": "Failed to swap employees",
+      "selectBookingToSwap": "Select which booking the current employee should take over",
+      "selectCompatibleBooking": "Compatible Bookings",
+      "compatibleBookingsHelp": "These bookings can be swapped because they are in the same category and location",
+      "swapPreview": "Swap Preview:"
+    },
+    
     "messages": {
       "activityCreated": "Activity created successfully",
       "activityUpdated": "Activity updated successfully",
@@ -215,5 +512,60 @@
       "filesUploadedSuccessfully": "files uploaded successfully",
       "mediaDeleteWarning": "{{count}} media item(s) will be permanently deleted when you save."
     }
+  },
+  "payment": {
+    "payDeposit": "Pay Deposit",
+    "payRemaining": "Pay Remaining",
+    "payFull": "Pay in Full",
+    "payCash": "Pay Cash",
+    "amount": "Amount",
+    "processing": "Processing...",
+    "pay": "Pay Now",
+    "success": "Payment successful!",
+    "error": "Payment failed. Please try again.",
+    "initError": "Failed to initialize payment",
+    "progress": "Payment Progress",
+    "remaining": "Remaining",
+    "willPayCash": "Will pay remaining in cash",
+    "markedCash": "Marked to pay cash successfully",
+    "markCashError": "Failed to mark as cash payment",
+    
+    "status": {
+      "unpaid": "Unpaid",
+      "deposit_paid": "Deposit Paid",
+      "fully_paid": "Fully Paid",
+      "partially_refunded": "Partially Refunded",
+      "fully_refunded": "Fully Refunded"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "yes": "Yes",
+    "no": "No",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "noResults": "No results found",
+    "refresh": "Refresh",
+    "confirm": "Confirm",
+    "success": "Success",
+    "error": "Error"
+  },
+  
+  "errors": {
+    "generic": "An error occurred. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "notFound": "The requested resource was not found.",
+    "serverError": "Server error. Please try again later."
   }
 }

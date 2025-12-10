@@ -31,7 +31,11 @@ import {
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
 import { activityService } from '../services/activityService';
+import { useAuth } from '../context/AuthContext';
+import BookingModal from '../components/BookingModal';
 import type { Activity } from '../types/activity';
 
 // Custom Arrow Components
@@ -84,10 +88,13 @@ const ActivityDetail = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
   
   const [activity, setActivity] = useState<Activity | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -102,11 +109,32 @@ const ActivityDetail = () => {
       setActivity(response.data);
       setError(null);
     } catch (err) {
-      setError('Failed to load activity details. Please try again later.');
+      setError(t('activityDetail.loadError'));
       console.error('Error fetching activity:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBookNowClick = () => {
+    if (!isAuthenticated) {
+      toast.error(t('activityDetail.loginRequired'));
+      navigate('/login', { state: { from: `/activity/${id}` } });
+      return;
+    }
+
+    if (!activity?.active) {
+      toast.error(t('activityDetail.notAvailable'));
+      return;
+    }
+
+    setBookingModalOpen(true);
+  };
+
+  const handleBookingSuccess = () => {
+    setBookingModalOpen(false);
+    // Optionally redirect to my bookings page
+    // navigate('/my-bookings');
   };
 
   if (loading) {
@@ -127,13 +155,13 @@ const ActivityDetail = () => {
   if (error || !activity) {
     return (
       <Container sx={{ mt: 4 }}>
-        <Alert severity="error">{error || 'Activity not found'}</Alert>
+        <Alert severity="error">{error || t('activityDetail.notFound')}</Alert>
         <Button
           startIcon={<ArrowBack />}
           onClick={() => navigate('/home')}
           sx={{ mt: 2 }}
         >
-          Back to Activities
+          {t('activityDetail.backToActivities')}
         </Button>
       </Container>
     );
@@ -166,7 +194,7 @@ const ActivityDetail = () => {
         onClick={() => navigate('/home')}
         sx={{ mb: 3 }}
       >
-        Back to Activities
+        {t('activityDetail.backToActivities')}
       </Button>
 
       <Grid container spacing={4}>
@@ -237,7 +265,7 @@ const ActivityDetail = () => {
                           }}
                           src={item.url}
                         >
-                          Your browser does not support the video tag.
+                          {t('activityDetail.videoNotSupported')}
                         </video>
                         {/* Video overlay indicator */}
                         <Box
@@ -258,7 +286,7 @@ const ActivityDetail = () => {
                         >
                           <PlayCircleOutline fontSize="small" />
                           <Typography variant="caption" fontWeight={600}>
-                            Video
+                            {t('activityDetail.video')}
                           </Typography>
                         </Box>
                       </Box>
@@ -293,7 +321,7 @@ const ActivityDetail = () => {
             >
               {activity.imageUrls.length > 0 && (
                 <Chip
-                  label={`${activity.imageUrls.length} ${activity.imageUrls.length === 1 ? 'Photo' : 'Photos'}`}
+                  label={`${activity.imageUrls.length} ${activity.imageUrls.length === 1 ? t('activityDetail.photo') : t('activityDetail.photos')}`}
                   size="small"
                   variant="outlined"
                 />
@@ -301,7 +329,7 @@ const ActivityDetail = () => {
               {activity.videoUrls.length > 0 && (
                 <Chip
                   icon={<PlayCircleOutline />}
-                  label={`${activity.videoUrls.length} ${activity.videoUrls.length === 1 ? 'Video' : 'Videos'}`}
+                  label={`${activity.videoUrls.length} ${activity.videoUrls.length === 1 ? t('activityDetail.videoSingular') : t('activityDetail.videos')}`}
                   size="small"
                   variant="outlined"
                 />
@@ -315,23 +343,29 @@ const ActivityDetail = () => {
           <Box sx={{ position: { md: 'sticky' }, top: 20 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
               <Chip label={activity.category.name} color="primary" />
-              {activity.active && <Chip label="Available" color="success" variant="outlined" />}
+              {activity.active && (
+                <Chip 
+                  label={t('activityDetail.available')} 
+                  color="success" 
+                  variant="outlined" 
+                />
+              )}
             </Box>
 
             <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
               {activity.name}
             </Typography>
 
-            <Typography variant="body1" color="text.secondary" paragraph>
+            <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }} color="text.secondary" component="p">
               {activity.description}
             </Typography>
 
             <Card sx={{ mt: 3 }}>
               <CardContent>
                 <Typography variant="h4" color="primary" gutterBottom fontWeight="bold">
-                  €{activity.pricePerPerson}
+                  RON {activity.pricePerPerson}
                   <Typography component="span" variant="body1" color="text.secondary">
-                    {' '}/person
+                    {' '}/{t('activityDetail.person')}
                   </Typography>
                 </Typography>
 
@@ -341,29 +375,29 @@ const ActivityDetail = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Schedule color="action" />
                     <Typography variant="body1">
-                      <strong>Duration:</strong> {activity.duration}
+                      <strong>{t('activityDetail.duration')}:</strong> {activity.duration}
                     </Typography>
                   </Box>
 
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Person color="action" />
                     <Typography variant="body1">
-                      <strong>Group Size:</strong> {activity.minParticipants}-
-                      {activity.maxParticipants} participants
+                      <strong>{t('activityDetail.groupSize')}:</strong> {activity.minParticipants}-
+                      {activity.maxParticipants} {t('activityDetail.participants')}
                     </Typography>
                   </Box>
 
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <LocationOn color="action" />
                     <Typography variant="body1">
-                      <strong>Location:</strong> {activity.location}
+                      <strong>{t('activityDetail.location')}:</strong> {activity.location}
                     </Typography>
                   </Box>
 
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <AccountBalance color="action" />
                     <Typography variant="body1">
-                      <strong>Deposit:</strong> €{activity.depositAmount.toFixed(2)} (
+                      <strong>{t('activityDetail.deposit')}:</strong> RON {activity.depositAmount.toFixed(2)} (
                       {activity.depositPercent}%)
                     </Typography>
                   </Box>
@@ -375,9 +409,21 @@ const ActivityDetail = () => {
                   size="large"
                   sx={{ mt: 3 }}
                   startIcon={<Euro />}
+                  onClick={handleBookNowClick}
+                  disabled={!activity.active}
                 >
-                  Book Now
+                  {t('booking.bookNow')}
                 </Button>
+
+                {!isAuthenticated && (
+                  <Typography 
+                    variant="caption" 
+                    color="text.secondary" 
+                    sx={{ display: 'block', textAlign: 'center', mt: 1 }}
+                  >
+                    {t('activityDetail.loginToBook')}
+                  </Typography>
+                )}
               </CardContent>
             </Card>
           </Box>
@@ -390,33 +436,43 @@ const ActivityDetail = () => {
           <Card>
             <CardContent>
               <Typography variant="h5" gutterBottom fontWeight="bold">
-                Location Details
+                {t('activityDetail.locationDetails')}
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 2 }}>
                 {activity.locationDetails.city && (
                   <Typography variant="body1">
-                    <strong>City:</strong> {activity.locationDetails.city}
+                    <strong>{t('activityDetail.city')}:</strong> {activity.locationDetails.city}
                   </Typography>
                 )}
                 {activity.locationDetails.address && (
                   <Typography variant="body1">
-                    <strong>Address:</strong> {activity.locationDetails.address}
+                    <strong>{t('activityDetail.address')}:</strong> {activity.locationDetails.address}
                   </Typography>
                 )}
                 {activity.locationDetails.postalCode && (
                   <Typography variant="body1">
-                    <strong>Postal Code:</strong> {activity.locationDetails.postalCode}
+                    <strong>{t('activityDetail.postalCode')}:</strong> {activity.locationDetails.postalCode}
                   </Typography>
                 )}
                 {activity.locationDetails.latitude && activity.locationDetails.longitude && (
                   <Typography variant="body1">
-                    <strong>Coordinates:</strong> {activity.locationDetails.latitude.toFixed(6)}, {activity.locationDetails.longitude.toFixed(6)}
+                    <strong>{t('activityDetail.coordinates')}:</strong> {activity.locationDetails.latitude.toFixed(6)}, {activity.locationDetails.longitude.toFixed(6)}
                   </Typography>
                 )}
               </Box>
             </CardContent>
           </Card>
         </Box>
+      )}
+
+      {/* Booking Modal */}
+      {activity && (
+        <BookingModal
+          open={bookingModalOpen}
+          onClose={() => setBookingModalOpen(false)}
+          activity={activity}
+          onSuccess={handleBookingSuccess}
+        />
       )}
     </Container>
   );

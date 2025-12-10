@@ -70,7 +70,7 @@ export default function Login() {
     >
       <Paper sx={{ p: 3, width: "100%", textAlign: "center" }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          {t('auth.loginTitle')}
+          {t('auth.login.title')}
         </Typography>
         
         <Box 
@@ -81,7 +81,7 @@ export default function Login() {
           {error && <Alert severity="error">{error}</Alert>}
           
           <TextField
-            label={t('auth.username')}
+            label={t('auth.login.username')}
             name="username"
             value={formData.username}
             onChange={handleChange}
@@ -90,7 +90,7 @@ export default function Login() {
           />
           
           <TextField
-            label={t('auth.password')}
+            label={t('auth.login.password')}
             name="password"
             type="password"
             value={formData.password}
@@ -107,7 +107,7 @@ export default function Login() {
                 onChange={handleChange}
               />
             }
-            label={t('auth.rememberMe')}
+            label={t('auth.login.rememberMe')}
           />
           
           <Button
@@ -116,7 +116,7 @@ export default function Login() {
             fullWidth
             disabled={loading}
           >
-            {loading ? t('auth.signingIn') : t('auth.loginButton')}
+            {loading ? t('auth.login.signingIn') : t('auth.login.loginButton')}
           </Button>
           
           <Button 
@@ -124,7 +124,7 @@ export default function Login() {
             onClick={() => navigate('/register')}
             fullWidth
           >
-            {t('auth.registerButton')}
+            {t('auth.login.signUp')}
           </Button>
         </Box>
       </Paper>

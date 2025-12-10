@@ -96,4 +96,41 @@ public class Activity {
         mediaList.remove(media);
         media.setActivity(null);
     }
+
+    public String getLocationIdentifier() {
+        if (locationDetails != null &&
+                locationDetails.getLatitude() != null &&
+                locationDetails.getLongitude() != null) {
+            // Round to 4 decimal places (~11 meters precision)
+            double roundedLat = Math.round(locationDetails.getLatitude() * 10000.0) / 10000.0;
+            double roundedLon = Math.round(locationDetails.getLongitude() * 10000.0) / 10000.0;
+            return String.format("%.4f,%.4f", roundedLat, roundedLon);
+        }
+
+        // Fallback to location string + city
+        String city = locationDetails != null ? locationDetails.getCity() : "";
+        return (location + "|" + city).toLowerCase().trim();
+    }
+
+    /**
+     * Checks if two activities have the same location
+     */
+    public boolean hasSameLocationAs(Activity other) {
+        if (this.locationDetails != null &&
+                this.locationDetails.getLatitude() != null &&
+                this.locationDetails.getLongitude() != null &&
+                other.locationDetails != null &&
+                other.locationDetails.getLatitude() != null &&
+                other.locationDetails.getLongitude() != null) {
+
+            // Use coordinates - within ~11 meters (0.0001 degrees)
+            double latDiff = Math.abs(this.locationDetails.getLatitude() - other.locationDetails.getLatitude());
+            double lonDiff = Math.abs(this.locationDetails.getLongitude() - other.locationDetails.getLongitude());
+
+            return latDiff < 0.0001 && lonDiff < 0.0001;
+        }
+
+        // Fallback to string comparison
+        return this.getLocationIdentifier().equals(other.getLocationIdentifier());
+    }
 }

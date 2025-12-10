@@ -24,6 +24,8 @@ import {
   Chip,
   Paper,
   LinearProgress,
+  Alert,
+  CircularProgress,
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -31,10 +33,12 @@ import {
   Image as ImageIcon,
   VideoLibrary as VideoIcon,
   CloudUpload as UploadIcon,
+  LocationOn as LocationIcon,
+  Check as CheckIcon,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { mediaService } from '../services/mediaService'; // Import mediaService
+import { mediaService } from '../services/mediaService';
 import type { Activity, Category, LocationDetails } from '../types/activity';
 
 interface ActivityFormProps {
@@ -111,6 +115,103 @@ const formatFileSize = (bytes: number): string => {
   return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 };
 
+// Parse Google Maps URL to extract coordinates
+const parseGoogleMapsUrl = (url: string): { lat: number; lng: number } | null => {
+  try {
+    // Clean the URL
+    url = url.trim();
+
+    // Pattern 1: Standard Google Maps with coordinates in URL
+    // https://www.google.com/maps/place/.../@45.6526806,25.6012134,13z
+    const pattern1 = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match1 = url.match(pattern1);
+    if (match1) {
+      return {
+        lat: parseFloat(match1[1]),
+        lng: parseFloat(match1[2]),
+      };
+    }
+
+    // Pattern 2: Query format
+    // https://maps.google.com/?q=45.6526806,25.6012134
+    const pattern2 = /[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match2 = url.match(pattern2);
+    if (match2) {
+      return {
+        lat: parseFloat(match2[1]),
+        lng: parseFloat(match2[2]),
+      };
+    }
+
+    // Pattern 3: Direct coordinates
+    // https://www.google.com/maps/@45.6526806,25.6012134,13z
+    const pattern3 = /maps\/@(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match3 = url.match(pattern3);
+    if (match3) {
+      return {
+        lat: parseFloat(match3[1]),
+        lng: parseFloat(match3[2]),
+      };
+    }
+
+    // Pattern 4: Place ID format
+    // https://www.google.com/maps/place/.../@45.6526806,25.6012134
+    const pattern4 = /place\/[^/]+\/@(-?\d+\.\d+),(-?\d+\.\d+)/;
+    const match4 = url.match(pattern4);
+    if (match4) {
+      return {
+        lat: parseFloat(match4[1]),
+        lng: parseFloat(match4[2]),
+      };
+    }
+
+    // Pattern 5: Coordinates after /maps/
+    // https://maps.app.goo.gl/... or https://goo.gl/maps/...
+    const pattern5 = /(-?\d+\.\d+),\s*(-?\d+\.\d+)/;
+    const match5 = url.match(pattern5);
+    if (match5) {
+      return {
+        lat: parseFloat(match5[1]),
+        lng: parseFloat(match5[2]),
+      };
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+// Reverse geocode coordinates to get address details
+const reverseGeocode = async (lat: number, lng: number): Promise<Partial<LocationDetails> | null> => {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+      {
+        headers: {
+          'Accept-Language': 'en',
+        },
+      }
+    );
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    const address = data.address;
+
+    return {
+      city: address.city || address.town || address.village || address.municipality || '',
+      address: data.display_name || '',
+      latitude: lat,
+      longitude: lng,
+      postalCode: address.postcode || '',
+    };
+  } catch (error) {
+    console.error('Reverse geocoding error:', error);
+    return null;
+  }
+};
+
 export default function ActivityForm({ open, onClose, onSave, activity, categories }: ActivityFormProps) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
@@ -123,15 +224,23 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
   const [imageFiles, setImageFiles] = useState<FileWithPreview[]>([]);
   const [videoFiles, setVideoFiles] = useState<FileWithPreview[]>([]);
 
+  // Location parsing state
+  const [mapsUrl, setMapsUrl] = useState('');
+  const [parsingLocation, setParsingLocation] = useState(false);
+  const [locationError, setLocationError] = useState('');
+
   const handleEnter = () => {
     setFormData(getInitialFormData(activity));
     setActiveTab(0);
     setImageFiles([]);
     setVideoFiles([]);
     setUploadProgress(0);
+    setMapsUrl('');
+    setLocationError('');
   };
 
   const handleChange = (field: keyof Activity, value: any) => {
+    // This preserves white spaces, enters, and tabs
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -155,6 +264,56 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
 
   const handlePrevious = () => {
     setActiveTab(prev => Math.max(prev - 1, 0));
+  };
+
+  // Parse Google Maps URL and extract location
+  const handleParseLocation = async () => {
+    if (!mapsUrl.trim()) {
+      setLocationError(t('admin.location.urlRequired'));
+      return;
+    }
+
+    setParsingLocation(true);
+    setLocationError('');
+
+    try {
+      const coords = parseGoogleMapsUrl(mapsUrl);
+      
+      if (!coords) {
+        setLocationError(t('admin.location.invalidUrl'));
+        setParsingLocation(false);
+        return;
+      }
+
+      const locationDetails = await reverseGeocode(coords.lat, coords.lng);
+
+      if (!locationDetails) {
+        setLocationError(t('admin.location.geocodeFailed'));
+        setParsingLocation(false);
+        return;
+      }
+
+      // Update form data with parsed location
+      setFormData(prev => ({
+        ...prev,
+        location: locationDetails.city || '',
+        locationDetails: {
+          city: locationDetails.city || '',
+          address: locationDetails.address || '',
+          latitude: locationDetails.latitude,
+          longitude: locationDetails.longitude,
+          postalCode: locationDetails.postalCode || '',
+        } as LocationDetails,
+      }));
+
+      toast.success(t('admin.location.parseSuccess'));
+      setMapsUrl('');
+    } catch (error) {
+      console.error('Error parsing location:', error);
+      setLocationError(t('admin.location.parseError'));
+    } finally {
+      setParsingLocation(false);
+    }
   };
 
   // Handle image file selection
@@ -252,10 +411,10 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
       // Show results
       if (failedUploads.length > 0) {
         toast.error(
-          `${uploadedCount}/${totalFiles} files uploaded. Failed: ${failedUploads.join(', ')}`
+          `${uploadedCount}/${totalFiles} ${t('admin.messages.filesUploaded')}. ${t('admin.messages.failedFiles')}: ${failedUploads.join(', ')}`
         );
       } else if (uploadedCount > 0) {
-        toast.success(`${uploadedCount} files uploaded successfully`);
+        toast.success(`${uploadedCount} ${t('admin.messages.filesUploadedSuccessfully')}`);
       }
     } finally {
       setUploadingFiles(false);
@@ -264,13 +423,44 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
   };
 
   const handleSubmit = async () => {
+    // Validation
+    if (!formData.name || !formData.description) {
+      toast.error(t('admin.validation.requiredFields'));
+      return;
+    }
+
+    if (formData.minParticipants! < 1 || formData.maxParticipants! < 1) {
+      toast.error(t('admin.validation.participantsPositive'));
+      return;
+    }
+
+    if (formData.minParticipants! > formData.maxParticipants!) {
+      toast.error(t('admin.validation.minMaxParticipants'));
+      return;
+    }
+
+    if (formData.pricePerPerson! < 0) {
+      toast.error(t('admin.validation.pricePositive'));
+      return;
+    }
+
+    if (formData.depositPercent! < 0 || formData.depositPercent! > 100) {
+      toast.error(t('admin.validation.depositRange'));
+      return;
+    }
+
+    if (formData.durationMinutes! < 1) {
+      toast.error(t('admin.validation.durationPositive'));
+      return;
+    }
+
     try {
       setLoading(true);
       
       // Prepare data for backend
       const dataToSend = {
         name: formData.name,
-        description: formData.description,
+        description: formData.description, // This contains the white spaces
         minParticipants: formData.minParticipants,
         maxParticipants: formData.maxParticipants,
         pricePerPerson: formData.pricePerPerson,
@@ -339,7 +529,7 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
         {uploadingFiles && (
           <Box sx={{ mb: 2 }}>
             <Typography variant="body2" gutterBottom>
-              Uploading files... ({Math.round(uploadProgress)}%)
+              {t('admin.messages.uploadingFiles')} ({Math.round(uploadProgress)}%)
             </Typography>
             <LinearProgress variant="determinate" value={uploadProgress} />
           </Box>
@@ -382,6 +572,7 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
               autoFocus
               disabled={isSubmitting}
             />
+            {/* Description Field - preserves whitespace via multiline prop */}
             <TextField
               label={t('admin.activityFields.description')}
               value={formData.description || ''}
@@ -420,8 +611,8 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
               <TextField
                 label={t('admin.activityFields.minParticipants')}
                 type="number"
-                value={formData.minParticipants || 1}
-                onChange={(e) => handleChange('minParticipants', Number(e.target.value))}
+                value={formData.minParticipants ?? ''}
+                onChange={(e) => handleChange('minParticipants', e.target.value === '' ? '' : Math.max(1, Number(e.target.value)))}
                 required
                 fullWidth
                 inputProps={{ min: 1 }}
@@ -430,8 +621,8 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
               <TextField
                 label={t('admin.activityFields.maxParticipants')}
                 type="number"
-                value={formData.maxParticipants || 10}
-                onChange={(e) => handleChange('maxParticipants', Number(e.target.value))}
+                value={formData.maxParticipants ?? ''}
+                onChange={(e) => handleChange('maxParticipants', e.target.value === '' ? '' : Math.max(1, Number(e.target.value)))}
                 required
                 fullWidth
                 inputProps={{ min: 1 }}
@@ -443,8 +634,8 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
               <TextField
                 label={t('admin.activityFields.pricePerPerson')}
                 type="number"
-                value={formData.pricePerPerson || 0}
-                onChange={(e) => handleChange('pricePerPerson', Number(e.target.value))}
+                value={formData.pricePerPerson ?? ''}
+                onChange={(e) => handleChange('pricePerPerson', e.target.value === '' ? '' : Math.max(0, Number(e.target.value)))}
                 required
                 fullWidth
                 inputProps={{ min: 0, step: 0.01 }}
@@ -453,8 +644,11 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
               <TextField
                 label={t('admin.activityFields.depositPercent')}
                 type="number"
-                value={formData.depositPercent || 0}
-                onChange={(e) => handleChange('depositPercent', Number(e.target.value))}
+                value={formData.depositPercent ?? ''}
+                onChange={(e) => {
+                  const val = e.target.value === '' ? '' : Number(e.target.value);
+                  handleChange('depositPercent', val === '' ? '' : Math.min(100, Math.max(0, val)));
+                }}
                 required
                 fullWidth
                 inputProps={{ min: 0, max: 100 }}
@@ -465,8 +659,8 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
             <TextField
               label={t('admin.activityFields.durationMinutes')}
               type="number"
-              value={formData.durationMinutes || 60}
-              onChange={(e) => handleChange('durationMinutes', Number(e.target.value))}
+              value={formData.durationMinutes ?? ''}
+              onChange={(e) => handleChange('durationMinutes', e.target.value === '' ? '' : Math.max(1, Number(e.target.value)))}
               required
               fullWidth
               inputProps={{ min: 1 }}
@@ -479,6 +673,49 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
               </Typography>
             </Divider>
 
+            <Paper variant="outlined" sx={{ p: 2, bgcolor: 'action.hover' }}>
+              <Typography variant="subtitle2" gutterBottom fontWeight={600}>
+                <LocationIcon sx={{ fontSize: 18, verticalAlign: 'middle', mr: 0.5 }} />
+                {t('admin.location.parseFromMaps')}
+              </Typography>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                <Typography variant="caption">
+                  {t('admin.location.howToGetUrl')}
+                </Typography>
+                <Box component="ol" sx={{ mt: 1, mb: 0, pl: 2, fontSize: '0.75rem' }}>
+                  <li>{t('admin.location.step1')}</li>
+                  <li>{t('admin.location.step2')}</li>
+                  <li>{t('admin.location.step3')}</li>
+                </Box>
+              </Alert>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <TextField
+                  placeholder="https://www.google.com/maps/@47.1585,27.6014,15z"
+                  value={mapsUrl}
+                  onChange={(e) => {
+                    setMapsUrl(e.target.value);
+                    setLocationError('');
+                  }}
+                  fullWidth
+                  size="small"
+                  disabled={parsingLocation || isSubmitting}
+                  error={!!locationError}
+                  helperText={locationError}
+                  multiline
+                  maxRows={2}
+                />
+                <Button
+                  variant="contained"
+                  onClick={handleParseLocation}
+                  disabled={parsingLocation || isSubmitting || !mapsUrl.trim()}
+                  startIcon={parsingLocation ? <CircularProgress size={16} /> : <CheckIcon />}
+                  sx={{ minWidth: 100 }}
+                >
+                  {t('admin.location.parse')}
+                </Button>
+              </Box>
+            </Paper>
+
             {/* Location Summary */}
             <TextField
               label={t('admin.activityFields.location')}
@@ -490,7 +727,11 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
               disabled={isSubmitting}
             />
 
-            {/* Detailed Location */}
+            {/* Detailed Location - Read-only after parsing */}
+            <Alert severity="info" icon={<LocationIcon />}>
+              {t('admin.location.autoFilled')}
+            </Alert>
+
             <TextField
               label={t('admin.activityFields.city')}
               value={formData.locationDetails?.city || ''}
@@ -498,6 +739,7 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
               required
               fullWidth
               disabled={isSubmitting}
+              InputProps={{ readOnly: true }}
             />
 
             <TextField
@@ -506,37 +748,38 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
               onChange={(e) => handleLocationDetailsChange('address', e.target.value)}
               fullWidth
               disabled={isSubmitting}
+              multiline
+              rows={2}
+              InputProps={{ readOnly: true }}
             />
 
             <Box sx={{ display: 'flex', gap: 2 }}>
               <TextField
                 label={t('admin.activityFields.latitude')}
                 type="number"
-                value={formData.locationDetails?.latitude || ''}
-                onChange={(e) => handleLocationDetailsChange('latitude', e.target.value ? Number(e.target.value) : undefined)}
+                value={formData.locationDetails?.latitude ?? ''}
                 fullWidth
                 inputProps={{ step: 0.000001 }}
-                helperText="Optional"
                 disabled={isSubmitting}
+                InputProps={{ readOnly: true }}
               />
               <TextField
                 label={t('admin.activityFields.longitude')}
                 type="number"
-                value={formData.locationDetails?.longitude || ''}
-                onChange={(e) => handleLocationDetailsChange('longitude', e.target.value ? Number(e.target.value) : undefined)}
+                value={formData.locationDetails?.longitude ?? ''}
                 fullWidth
                 inputProps={{ step: 0.000001 }}
-                helperText="Optional"
                 disabled={isSubmitting}
+                InputProps={{ readOnly: true }}
               />
             </Box>
 
             <TextField
               label={t('admin.activityFields.postalCode')}
               value={formData.locationDetails?.postalCode || ''}
-              onChange={(e) => handleLocationDetailsChange('postalCode', e.target.value)}
               fullWidth
               disabled={isSubmitting}
+              InputProps={{ readOnly: true }}
             />
 
             <FormControlLabel
@@ -739,7 +982,7 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
             </Box>
 
             <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-              Note: Files will be uploaded when you save the activity.
+              {t('admin.activityFields.mediaNote')}
             </Typography>
           </Box>
         </TabPanel>

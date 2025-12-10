@@ -15,6 +15,8 @@ import ActivityDetail from './pages/ActivityDetail';
 import Admin from './pages/Admin';
 import ProtectedRoute from './components/ProtectedRoute';
 import Account from './pages/Account';
+import MyBookings from './pages/MyBookings';
+import PaymentSuccess from './components/PaymentSuccess';
 
 function App() {
   return (
@@ -31,7 +33,7 @@ function App() {
           <Toaster
             position="top-right"
             toastOptions={{
-              duration: 3000,
+              duration: 5000,
               style: {
                 background: '#1b4332',
                 color: '#fff',
@@ -59,8 +61,17 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                  path="/my-bookings"
+                  element={
+                    <ProtectedRoute>
+                      <MyBookings />
+                    </ProtectedRoute>
+                  }
+                />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route
                 path="/home"
                 element={<Home />}/>

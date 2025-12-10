@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/components/admin/CategoryForm.tsx
 import { useState } from 'react';
 import {
@@ -13,8 +12,15 @@ import {
   Checkbox,
   Typography,
   IconButton,
+  Alert,
+  InputAdornment,
+  Tooltip,
 } from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
+import { 
+  Close as CloseIcon,
+  Info as InfoIcon,
+  People as PeopleIcon,
+} from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import type { Category } from '../types/activity';
@@ -35,14 +41,15 @@ const getInitialFormData = (category: Category | null | undefined): Partial<Cate
     description: '',
     slug: '',
     displayOrder: 0,
-    active: true, // FIXED: Default to true so backend doesn't complain about null
+    active: true,
+    maxParticipantsPerGuide: 30, // Default value
   };
 };
 
 const generateSlug = (text: string) => {
   return text
     .toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, "") // Remove accents (e.g., ă -> a)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
@@ -53,33 +60,47 @@ export default function CategoryForm({ open, onClose, onSave, category }: Catego
   const { t } = useTranslation();
   const [formData, setFormData] = useState<Partial<Category>>(() => getInitialFormData(category));
   const [loading, setLoading] = useState(false);
-  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false); // New state to track manual edits
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
   const handleEnter = () => {
     setFormData(getInitialFormData(category));
     setSlugManuallyEdited(false);
   };
 
-  const handleChange = (field: keyof Category, value: any) => {
+  const handleChange = (field: keyof Category, value: string | number | boolean) => {
     setFormData(prev => {
       const updated = { ...prev, [field]: value };
       
-      // Auto-generate slug from name ONLY if user hasn't manually edited the slug
       if (field === 'name' && !slugManuallyEdited) {
-         updated.slug = generateSlug(value);
+         updated.slug = generateSlug(value as string);
       }
       
       return updated;
     });
   };
 
-  // Specific handler for Slug to mark it as manually edited
   const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSlugManuallyEdited(true);
     setFormData(prev => ({ ...prev, slug: e.target.value }));
   };
 
   const handleSubmit = async () => {
+    // Validation
+    if (!formData.name?.trim()) {
+      toast.error(t('admin.validation.categoryNameRequired'));
+      return;
+    }
+    
+    if (!formData.slug?.trim()) {
+      toast.error(t('admin.validation.categorySlugRequired'));
+      return;
+    }
+
+    if (!formData.maxParticipantsPerGuide || formData.maxParticipantsPerGuide < 1) {
+      toast.error(t('admin.validation.maxParticipantsRequired'));
+      return;
+    }
+
     try {
       setLoading(true);
       await onSave(formData);
@@ -127,6 +148,7 @@ export default function CategoryForm({ open, onClose, onSave, category }: Catego
             fullWidth
             autoFocus
           />
+          
           <TextField
             label={t('admin.categoryFields.description')}
             value={formData.description || ''}
@@ -135,14 +157,53 @@ export default function CategoryForm({ open, onClose, onSave, category }: Catego
             rows={3}
             fullWidth
           />
+          
           <TextField
             label={t('admin.categoryFields.slug')}
             value={formData.slug || ''}
-            onChange={handleSlugChange} // Use specific handler
+            onChange={handleSlugChange}
             required
             fullWidth
-            helperText="URL-friendly identifier (e.g., water-sports)"
+            helperText={t('admin.categoryFields.slugHelp')}
           />
+
+          {/* Max Participants Per Guide Field */}
+          <Box>
+            <TextField
+              label={t('admin.categoryFields.maxParticipantsPerGuide')}
+              type="number"
+              value={formData.maxParticipantsPerGuide || 30}
+              onChange={(e) => handleChange('maxParticipantsPerGuide', Number(e.target.value))}
+              required
+              fullWidth
+              inputProps={{ min: 1, max: 100 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PeopleIcon color="action" />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Tooltip 
+                      title={t('admin.categoryFields.maxParticipantsHelp')}
+                      placement="top"
+                      arrow
+                    >
+                      <InfoIcon color="action" sx={{ cursor: 'help' }} />
+                    </Tooltip>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            
+            <Alert severity="info" sx={{ mt: 1 }} icon={<InfoIcon />}>
+              <Typography variant="body2">
+                {t('admin.categoryFields.maxParticipantsExplanation')}
+              </Typography>
+            </Alert>
+          </Box>
+
           <TextField
             label={t('admin.categoryFields.displayOrder')}
             type="number"
@@ -150,12 +211,14 @@ export default function CategoryForm({ open, onClose, onSave, category }: Catego
             onChange={(e) => handleChange('displayOrder', Number(e.target.value))}
             fullWidth
             inputProps={{ min: 0 }}
+            helperText={t('admin.categoryFields.displayOrderHelp')}
           />
+          
           <FormControlLabel
             control={
               <Checkbox
-                checked={formData.active ?? true} // FIXED: Uncommented
-                onChange={(e) => handleChange('active', e.target.checked)} // FIXED: Uncommented
+                checked={formData.active ?? true}
+                onChange={(e) => handleChange('active', e.target.checked)}
               />
             }
             label={t('admin.categoryFields.active')}
@@ -170,7 +233,7 @@ export default function CategoryForm({ open, onClose, onSave, category }: Catego
         <Button 
           onClick={handleSubmit} 
           variant="contained"
-          disabled={loading}
+          disabled={loading || !formData.name || !formData.slug}
         >
           {loading ? t('common.loading') : t('admin.save')}
         </Button>

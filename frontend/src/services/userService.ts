@@ -12,4 +12,6 @@ export const userService = {
   
   deleteAccount: (data: DeleteAccountRequest) => 
     api.delete<{ message: string }>('/user/me', { data }),
+
+  getAllUsers: () => api.get('/users'),
 };

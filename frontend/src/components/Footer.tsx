@@ -1,5 +1,6 @@
 // src/components/Footer.tsx
-import { Box, Container, Grid, Typography, Link, IconButton, Divider } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { Box, Container, Grid, Typography, Link, IconButton, Divider, CircularProgress } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
@@ -11,21 +12,62 @@ import {
   Phone as PhoneIcon,
   LocationOn as LocationIcon,
 } from '@mui/icons-material';
+import { settingsService } from '../services/settingsService';
+import type { Settings } from '../types/settings';
 
 export default function Footer() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const footerLinks = [
-    { label: t('footer.aboutUs'), path: '/about' },
-    { label: t('footer.contact'), path: '/contact' },
-    { label: t('footer.terms'), path: '/terms' },
-    { label: t('footer.privacy'), path: '/privacy' },
-  ];
+  useEffect(() => {
+    fetchSettings();
+  }, []);
 
-  // Use contrastText from primary palette (white for both light and dark)
+  const fetchSettings = async () => {
+    try {
+      const response = await settingsService.getSettings();
+      setSettings(response.data);
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const textColor = theme.palette.primary.contrastText;
+
+  const footerLinks = settings ? [
+    { label: t('footer.aboutUs'), path: settings.aboutUsUrl },
+    { label: t('footer.contact'), path: '/contact' },
+    { label: t('footer.terms'), path: settings.termsUrl },
+    { label: t('footer.privacy'), path: settings.privacyUrl },
+  ] : [];
+
+  if (loading) {
+    return (
+      <Box
+        component="footer"
+        sx={{
+          mt: 'auto',
+          background: theme.palette.mode === 'light'
+            ? `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`
+            : `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
+          color: textColor,
+          py: 6,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <CircularProgress sx={{ color: textColor }} />
+      </Box>
+    );
+  }
+
+  if (!settings) return null;
 
   return (
     <Box
@@ -44,51 +86,69 @@ export default function Footer() {
           {/* Company Info */}
           <Grid size={{ xs: 12, md: 4 }}>
             <Typography variant="h6" gutterBottom fontWeight={700}>
-              {t('nav.appName')}
+              {settings.companyName}
             </Typography>
             <Typography variant="body2" sx={{ mb: 2, opacity: 0.9 }}>
-              {t('footer.description')}
+              {settings.companyDescription}
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <IconButton
-                size="small"
-                sx={{ 
-                  color: textColor,
-                  '&:hover': { 
-                    color: theme.palette.primary.light,
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  } 
-                }}
-                aria-label="Facebook"
-              >
-                <FacebookIcon />
-              </IconButton>
-              <IconButton
-                size="small"
-                sx={{ 
-                  color: textColor,
-                  '&:hover': { 
-                    color: theme.palette.primary.light,
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  } 
-                }}
-                aria-label="Instagram"
-              >
-                <InstagramIcon />
-              </IconButton>
-              <IconButton
-                size="small"
-                sx={{ 
-                  color: textColor,
-                  '&:hover': { 
-                    color: theme.palette.primary.light,
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  } 
-                }}
-                aria-label="Twitter"
-              >
-                <TwitterIcon />
-              </IconButton>
+              {settings.facebookUrl && (
+                <IconButton
+                  component="a"
+                  href={settings.facebookUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  size="small"
+                  sx={{ 
+                    color: textColor,
+                    '&:hover': { 
+                      color: theme.palette.primary.light,
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    } 
+                  }}
+                  aria-label="Facebook"
+                >
+                  <FacebookIcon />
+                </IconButton>
+              )}
+              {settings.instagramUrl && (
+                <IconButton
+                  component="a"
+                  href={settings.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  size="small"
+                  sx={{ 
+                    color: textColor,
+                    '&:hover': { 
+                      color: theme.palette.primary.light,
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    } 
+                  }}
+                  aria-label="Instagram"
+                >
+                  <InstagramIcon />
+                </IconButton>
+              )}
+              {settings.twitterUrl && (
+                <IconButton
+                  component="a"
+                  href={settings.twitterUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  size="small"
+                  sx={{ 
+                    color: textColor,
+                    '&:hover': { 
+                      color: theme.palette.primary.light,
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    } 
+                  }}
+                  aria-label="Twitter"
+                >
+                  <TwitterIcon />
+                </IconButton>
+              )}
             </Box>
           </Grid>
 
@@ -127,24 +187,30 @@ export default function Footer() {
               {t('footer.contact')}
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <EmailIcon fontSize="small" sx={{ color: theme.palette.primary.light }} />
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  info@dornaadventure.ro
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <PhoneIcon fontSize="small" sx={{ color: theme.palette.primary.light }} />
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  +40 123 456 789
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <LocationIcon fontSize="small" sx={{ color: theme.palette.primary.light }} />
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  Bucovina, România
-                </Typography>
-              </Box>
+              {settings.email && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <EmailIcon fontSize="small" sx={{ color: theme.palette.primary.light }} />
+                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    {settings.email}
+                  </Typography>
+                </Box>
+              )}
+              {settings.phone && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <PhoneIcon fontSize="small" sx={{ color: theme.palette.primary.light }} />
+                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    {settings.phone}
+                  </Typography>
+                </Box>
+              )}
+              {settings.address && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <LocationIcon fontSize="small" sx={{ color: theme.palette.primary.light }} />
+                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    {settings.address}
+                  </Typography>
+                </Box>
+              )}
             </Box>
           </Grid>
         </Grid>
@@ -159,7 +225,7 @@ export default function Footer() {
         {/* Copyright */}
         <Box sx={{ textAlign: 'center' }}>
           <Typography variant="body2" sx={{ opacity: 0.8 }}>
-            © {new Date().getFullYear()} {t('nav.appName')}. {t('footer.rights')}
+            © {new Date().getFullYear()} {settings.companyName}. {t('footer.rights')}
           </Typography>
         </Box>
       </Container>

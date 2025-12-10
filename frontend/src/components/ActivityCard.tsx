@@ -206,7 +206,7 @@ const ActivityCard = ({ activity, onRefresh }: ActivityCardProps) => {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              €{activity.pricePerPerson}
+              RON {activity.pricePerPerson}
               <Typography component="span" variant="body2" color="text.secondary">
                 {t('activity.perPerson')}
               </Typography>

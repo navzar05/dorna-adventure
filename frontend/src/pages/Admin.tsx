@@ -1,4 +1,3 @@
-// src/pages/Admin.tsx
 import { useState, useEffect } from 'react';
 import {
   Container,
@@ -15,10 +14,16 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { activityService } from '../services/activityService';
 import { categoryService } from '../services/categoryService';
+import { employeeService } from '../services/employeeService';
 import ActivityForm from '../components/ActivityForm';
 import ActivityEditForm from '../components/ActivityEditForm';
 import CategoryForm from '../components/CategoryForm';
+import EmployeeForm from '../components/EmployeeForm';
+import WorkHoursForm from '../components/WorkHoursForm';
+import BookingManagement from '../components/BookingManagement';
 import type { Activity, Category } from '../types/activity';
+import type { Employee } from '../types/employee';
+import SettingsManagement from '../components/SettingsManagement';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -51,9 +56,16 @@ export default function Admin() {
   const [categoryFormOpen, setCategoryFormOpen] = useState(false);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
 
+  // Employees state
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [employeeFormOpen, setEmployeeFormOpen] = useState(false);
+  const [employeesLoading, setEmployeesLoading] = useState(false);
+
   useEffect(() => {
     fetchActivities();
     fetchCategories();
+    fetchEmployees();
   }, []);
 
   const fetchActivities = async () => {
@@ -77,6 +89,18 @@ export default function Admin() {
       toast.error(t('admin.messages.error'));
     } finally {
       setCategoriesLoading(false);
+    }
+  };
+
+  const fetchEmployees = async () => {
+    try {
+      setEmployeesLoading(true);
+      const response = await employeeService.getAllEmployees();
+      setEmployees(response.data);
+    } catch {
+      toast.error(t('admin.messages.error'));
+    } finally {
+      setEmployeesLoading(false);
     }
   };
 
@@ -145,7 +169,7 @@ export default function Admin() {
       field: 'pricePerPerson',
       headerName: t('admin.dataGrid.price'),
       width: 120,
-      valueFormatter: (value) => `€${value}`,
+      valueFormatter: (value) => `RON ${value}`,
     },
     {
       field: 'participants',
@@ -243,6 +267,66 @@ export default function Admin() {
     },
   ];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleEmployeeSave = async (data: any) => {
+    if (selectedEmployee) {
+      await employeeService.updateEmployee(selectedEmployee.id, data);
+    } else {
+      await employeeService.createEmployee(data);
+    }
+    fetchEmployees();
+    toast.success(
+      selectedEmployee
+        ? t('admin.employees.updated')
+        : t('admin.employees.created')
+    );
+  };
+
+  const handleEmployeeDelete = async (id: number) => {
+    if (window.confirm(t('admin.messages.confirmDelete'))) {
+      try {
+        await employeeService.deleteEmployee(id);
+        toast.success(t('admin.employees.deleted'));
+        fetchEmployees();
+      } catch  {
+        toast.error(t('admin.messages.error'));
+      }
+    }
+  };
+
+  const employeeColumns: GridColDef<Employee>[] = [
+    { field: 'id', headerName: t('admin.dataGrid.id'), width: 70 },
+    { field: 'username', headerName: t('admin.employees.username'), width: 150 },
+    { field: 'email', headerName: t('admin.employees.email'), flex: 1, minWidth: 200 },
+    { field: 'firstName', headerName: t('admin.employees.firstName'), width: 150 },
+    { field: 'lastName', headerName: t('admin.employees.lastName'), width: 150 },
+    { field: 'phoneNumber', headerName: t('admin.employees.phoneNumber'), width: 150 },
+    { field: 'enabled', headerName: t('admin.employees.enabled'), type: 'boolean', width: 100 },
+    {
+      field: 'actions',
+      type: 'actions',
+      headerName: t('admin.dataGrid.actions'),
+      width: 100,
+      getActions: (params) => [
+        <GridActionsCellItem
+          key="edit"
+          icon={<EditIcon />}
+          label={t('admin.edit')}
+          onClick={() => {
+            setSelectedEmployee(params.row);
+            setEmployeeFormOpen(true);
+          }}
+        />,
+        <GridActionsCellItem
+          key="delete"
+          icon={<DeleteIcon />}
+          label={t('admin.delete')}
+          onClick={() => handleEmployeeDelete(params.row.id)}
+        />,
+      ],
+    },
+  ];
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
@@ -250,9 +334,19 @@ export default function Admin() {
       </Typography>
 
       <Paper>
-        <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs 
+          value={tabValue} 
+          onChange={(_, v) => setTabValue(v)} 
+          sx={{ borderBottom: 1, borderColor: 'divider' }}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
           <Tab label={t('admin.activities')} />
           <Tab label={t('admin.categories')} />
+          <Tab label={t('admin.employees.title')} />
+          <Tab label={t('admin.workHours.title')} />
+          <Tab label={t('admin.bookings.title')} />
+          <Tab label={t('admin.settings.title')} />
         </Tabs>
 
         <TabPanel value={tabValue} index={0}>
@@ -308,6 +402,46 @@ export default function Admin() {
             autoHeight
           />
         </TabPanel>
+
+        <TabPanel value={tabValue} index={2}>
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setSelectedEmployee(null);
+                setEmployeeFormOpen(true);
+              }}
+            >
+              {t('admin.employees.add')}
+            </Button>
+          </Box>
+
+          <DataGrid
+            rows={employees}
+            columns={employeeColumns}
+            loading={employeesLoading}
+            pageSizeOptions={[5, 10, 25]}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 10 } },
+            }}
+            disableRowSelectionOnClick
+            autoHeight
+          />
+        </TabPanel>
+
+        {/* Work Hours Tab */}
+        <TabPanel value={tabValue} index={3}>
+          <WorkHoursForm />
+        </TabPanel>
+
+        {/* Bookings Tab */}
+        <TabPanel value={tabValue} index={4}>
+          <BookingManagement />
+        </TabPanel>
+        <TabPanel value={tabValue} index={5}>
+          <SettingsManagement/>
+        </TabPanel>
       </Paper>
 
       <ActivityForm
@@ -354,6 +488,16 @@ export default function Admin() {
         categories={categories}
       />
     )}
+
+      <EmployeeForm
+        open={employeeFormOpen}
+        onClose={() => {
+          setEmployeeFormOpen(false);
+          setSelectedEmployee(null);
+        }}
+        onSave={handleEmployeeSave}
+        employee={selectedEmployee}
+      />
     </Container>
   );
 }

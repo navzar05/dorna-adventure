@@ -37,4 +37,5 @@ export interface Category {
   activityCount?: number;
   displayOrder?: number;
   active?: boolean;
+  maxParticipantsPerGuide: number;
 }

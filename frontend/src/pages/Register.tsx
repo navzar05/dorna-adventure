@@ -1,13 +1,25 @@
+// src/pages/Register.tsx
 import { useState, type FormEvent, type ChangeEvent } from 'react';
-import { Container, Paper, TextField, Button, Box, Alert } from '@mui/material';
-import { MuiTelInput } from 'mui-tel-input'; // Add this import
-import { useNavigate } from 'react-router-dom';
+import { 
+  Container, 
+  Paper, 
+  TextField, 
+  Button, 
+  Box, 
+  Alert,
+  Typography,
+  Link as MuiLink
+} from '@mui/material';
+import { MuiTelInput } from 'mui-tel-input';
+import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 interface RegisterFormData {
   username: string;
-  firstname: string;
-  lastname: string;
+  email: string;
+  firstName: string;
+  lastName: string;
   phoneNumber: string;
   password: string;
   confirmPassword: string;
@@ -16,11 +28,13 @@ interface RegisterFormData {
 export default function Register() {
   const navigate = useNavigate();
   const { register } = useAuth();
+  const { t } = useTranslation();
   
   const [formData, setFormData] = useState<RegisterFormData>({
     username: '',
-    firstname: '',
-    lastname: '',
+    email: '',
+    firstName: '',
+    lastName: '',
     phoneNumber: '',
     password: '',
     confirmPassword: ''
@@ -45,18 +59,43 @@ export default function Register() {
   };
 
   const validateForm = (): boolean => {
-    if (!formData.username || !formData.firstname || !formData.lastname || !formData.password || !formData.phoneNumber) {
-      setError('All fields are required');
+    if (!formData.username) {
+      setError(t('auth.register.usernameRequired'));
+      return false;
+    }
+
+    if (!formData.email) {
+      setError(t('auth.register.emailRequired'));
+      return false;
+    }
+
+    if (!formData.firstName) {
+      setError(t('auth.register.firstNameRequired'));
+      return false;
+    }
+
+    if (!formData.lastName) {
+      setError(t('auth.register.lastNameRequired'));
+      return false;
+    }
+
+    if (!formData.phoneNumber) {
+      setError(t('auth.register.phoneRequired'));
+      return false;
+    }
+
+    if (!formData.password) {
+      setError(t('auth.register.passwordRequired'));
       return false;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.register.passwordMismatch'));
       return false;
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError(t('account.errors.passwordTooShort'));
       return false;
     }
 
@@ -76,19 +115,20 @@ export default function Register() {
 
     const result = await register({
       username: formData.username,
-      firstName: formData.firstname,
-      lastName: formData.lastname,
+      email: formData.email,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
       phoneNumber: formData.phoneNumber,
       password: formData.password
     });
 
     if (result.success) {
-      setSuccess(result.message || 'Registration successful');
+      setSuccess(result.message || t('auth.register.success'));
       setTimeout(() => {
         navigate('/login');
       }, 2000);
     } else {
-      setError(result.error || 'An error occurred');
+      setError(result.error || t('auth.register.error'));
     }
     
     setLoading(false);
@@ -96,79 +136,121 @@ export default function Register() {
 
   return (
     <Container
-      maxWidth="xs"
+      maxWidth="sm"
       sx={{
-        height: "100vh",
+        minHeight: "100vh",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
+        py: 4,
       }}
     >
-      <Paper sx={{ p: 3, width: "100%", textAlign: "center" }}>
-        <h1>Register</h1>
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+      <Paper 
+        elevation={3}
+        sx={{ 
+          p: 4, 
+          width: "100%",
+          borderRadius: 2,
+        }}
+      >
+        <Box sx={{ textAlign: "center", mb: 3 }}>
+          <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
+            {t('auth.register.title')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {t('auth.register.subtitle')}
+          </Typography>
+        </Box>
+
+        <Box 
+          component="form" 
+          onSubmit={handleSubmit} 
+          sx={{ 
+            display: "flex", 
+            flexDirection: "column", 
+            gap: 2.5
+          }}
+        >
           {error && <Alert severity="error">{error}</Alert>}
           {success && <Alert severity="success">{success}</Alert>}
           
           <TextField
-            label="Username"
+            label={t('auth.register.username')}
             name="username"
             value={formData.username}
             onChange={handleChange}
             fullWidth
             required
-          />
-          
-          <TextField
-            label="Firstname"
-            name="firstname"
-            value={formData.firstname}
-            onChange={handleChange}
-            fullWidth
-            required
-          />
-          
-          <TextField
-            label="Lastname"
-            name="lastname"
-            value={formData.lastname}
-            onChange={handleChange}
-            fullWidth
-            required
+            autoComplete="username"
           />
 
-          {/* MuiTelInput with its own handler */}
+          <TextField
+            label={t('auth.register.email')}
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            fullWidth
+            required
+            autoComplete="email"
+          />
+          
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <TextField
+              label={t('auth.register.firstName')}
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              fullWidth
+              required
+              autoComplete="given-name"
+            />
+            
+            <TextField
+              label={t('auth.register.lastName')}
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              fullWidth
+              required
+              autoComplete="family-name"
+            />
+          </Box>
+
           <MuiTelInput
-            label="Phone number"
+            label={t('auth.register.phoneNumber')}
             value={formData.phoneNumber}
-            onChange={handlePhoneChange}  // Use the special handler
-            defaultCountry="RO"  // Optional: set default country
+            onChange={handlePhoneChange}
+            defaultCountry="RO"
             fullWidth
             required
           />
           
           <TextField
-            label="Password"
+            label={t('auth.register.password')}
             name="password"
             type="password"
             value={formData.password}
             onChange={handleChange}
             fullWidth
             required
+            autoComplete="new-password"
+            helperText={t('account.errors.passwordTooShort')}
           />
           
           <TextField
-            label="Confirm Password"
+            label={t('auth.register.confirmPassword')}
             name="confirmPassword"
             type="password"
             value={formData.confirmPassword}
             onChange={handleChange}
             fullWidth
             required
+            autoComplete="new-password"
             error={!!formData.confirmPassword && formData.password !== formData.confirmPassword}
             helperText={
               formData.confirmPassword && formData.password !== formData.confirmPassword
-                ? 'Passwords do not match'
+                ? t('auth.register.passwordMismatch')
                 : ''
             }
           />
@@ -176,15 +258,22 @@ export default function Register() {
           <Button
             type="submit"
             variant="contained"
+            size="large"
             fullWidth
             disabled={loading}
+            sx={{ mt: 1 }}
           >
-            {loading ? 'Registering...' : 'Register'}
+            {loading ? t('common.loading') : t('auth.register.registerButton')}
           </Button>
           
-          <Button variant="outlined" href='/login' fullWidth>
-            Login
-          </Button>
+          <Box sx={{ textAlign: 'center', mt: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              {t('auth.register.haveAccount')}{' '}
+              <MuiLink component={Link} to="/login" underline="hover">
+                {t('auth.register.signIn')}
+              </MuiLink>
+            </Typography>
+          </Box>
         </Box>
       </Paper>
     </Container>

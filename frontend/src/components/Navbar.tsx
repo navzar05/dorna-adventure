@@ -12,13 +12,27 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
+import {
+  CalendarMonth as BookingsIcon,
+  Explore as ActivitiesIcon,
+  AdminPanelSettings as AdminIcon,
+} from '@mui/icons-material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import LanguageIcon from '@mui/icons-material/Language';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useThemeMode } from '../context/ThemeContext';
+
+// Import dayjs and locales
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/en';
+import 'dayjs/locale/ro';
+
+// Enable relativeTime plugin
+dayjs.extend(relativeTime);
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -28,6 +42,11 @@ const Navbar = () => {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const [anchorElLang, setAnchorElLang] = React.useState<null | HTMLElement>(null);
+
+  // Set dayjs locale when language changes
+  React.useEffect(() => {
+    dayjs.locale(i18n.language);
+  }, [i18n.language]);
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
@@ -67,6 +86,7 @@ const Navbar = () => {
   const changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
     localStorage.setItem('language', lang);
+    dayjs.locale(lang); // Set dayjs locale immediately
     handleCloseLangMenu();
   };
 
@@ -137,15 +157,24 @@ const Navbar = () => {
               onClose={handleCloseNavMenu}
               sx={{ display: { xs: 'block', md: 'none' } }}
             >
-                <MenuItem onClick={() => { handleCloseNavMenu(); navigate('/home'); }}>
-                  <Typography sx={{ textAlign: 'center' }}>{t('nav.activities')}</Typography>
+              <MenuItem onClick={() => { handleCloseNavMenu(); navigate('/home'); }}>
+                <Typography sx={{ textAlign: 'center' }}>{t('nav.activities')}</Typography>
+              </MenuItem>
+              {!isAuthenticated && (
+                <>
+                  <MenuItem key="login" onClick={() => { handleCloseNavMenu(); navigate('/login'); }}>
+                    <Typography sx={{ textAlign: 'center' }}>{t('nav.login')}</Typography>
+                  </MenuItem>
+                  <MenuItem key="register" onClick={() => { handleCloseNavMenu(); navigate('/register'); }}>
+                    <Typography sx={{ textAlign: 'center' }}>{t('nav.register')}</Typography>
+                  </MenuItem>
+                </>
+              )}
+              {isAuthenticated && (
+                <MenuItem component={Link} to="/my-bookings" onClick={handleCloseNavMenu}>
+                  <Typography textAlign="center">{t('nav.myBookings')}</Typography>
                 </MenuItem>
-                <MenuItem key="login" onClick={() => { handleCloseNavMenu(); navigate('/login'); }}>
-                  <Typography sx={{ textAlign: 'center' }}>{t('nav.login')}</Typography>
-                </MenuItem>
-                <MenuItem key="register" onClick={() => { handleCloseNavMenu(); navigate('/register'); }}>
-                  <Typography sx={{ textAlign: 'center' }}>{t('nav.register')}</Typography>
-                </MenuItem>
+              )}
               {isAdmin && (
                 <MenuItem key="admin" onClick={() => { handleCloseNavMenu(); navigate('/admin'); }}>
                   <Typography sx={{ textAlign: 'center' }}>{t('admin.title')}</Typography>
@@ -189,21 +218,46 @@ const Navbar = () => {
           </Typography>
 
           {/* Desktop Menu */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: 1 }}>
+            <Button
+              onClick={() => navigate('/home')}
+              color="inherit"
+              startIcon={<ActivitiesIcon />}
+              sx={{ 
+                my: 2,
+                display: 'flex',
+                alignItems: 'center',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {t('nav.activities')}
+            </Button>
+            {isAuthenticated && (
               <Button
-                onClick={() => navigate('/home')}
+                onClick={() => navigate('/my-bookings')}
                 color="inherit"
-                sx={{ my: 2, display: 'block' }}
+                startIcon={<BookingsIcon />}
+                sx={{ 
+                  my: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  whiteSpace: 'nowrap',
+                }}
               >
-                {t('nav.activities')}
+                {t('nav.myBookings')}
               </Button>
-   
+            )}
             {isAdmin && (
               <Button
                 onClick={() => navigate('/admin')}
                 color="inherit"
-                sx={{ my: 2, display: 'block' }}
+                startIcon={<AdminIcon />}
+                sx={{ 
+                  my: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  whiteSpace: 'nowrap',
+                }}
               >
                 {t('admin.title')}
               </Button>
@@ -290,9 +344,6 @@ const Navbar = () => {
                 open={Boolean(anchorElUser)}
                 onClose={handleCloseUserMenu}
               >
-                <MenuItem onClick={() => handleMenuClick('/profile')}>
-                  <Typography sx={{ textAlign: 'center' }}>{t('nav.profile')}</Typography>
-                </MenuItem>
                 <MenuItem onClick={() => handleMenuClick('/account')}>
                   <Typography sx={{ textAlign: 'center' }}>{t('nav.account')}</Typography>
                 </MenuItem>

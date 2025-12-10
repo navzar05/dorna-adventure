@@ -16,6 +16,8 @@ public class CategoryDTO {
     private String slug;
     private String iconUrl;
     private Integer activityCount;
+    private Integer maxParticipantsPerGuide;
+    private boolean active;
 
     public static CategoryDTO fromEntity(ActivityCategory category) {
         return CategoryDTO.builder()
@@ -25,6 +27,8 @@ public class CategoryDTO {
                 .slug(category.getSlug())
                 .iconUrl(category.getIconUrl())
                 .activityCount(category.getActivities() != null ? category.getActivities().size() : 0)
+                .maxParticipantsPerGuide(category.getMaxParticipantsPerGuide())
+                .active(category.getActive())
                 .build();
     }
 }

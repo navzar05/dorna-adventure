@@ -137,7 +137,7 @@ export default function Landing() {
               transition: 'all 0.3s ease',
             }}
           >
-            {t('landing.exploreActivities')}
+            {t('landing.explore')}
           </Button>
 
           {!isAuthenticated && (
