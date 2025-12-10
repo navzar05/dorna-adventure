@@ -12,6 +12,11 @@ WORKDIR /app
 # Copy the files to the container image
 COPY package*.json ./
 
+ARG VITE_API_BASE_URL
+
+# 2. Îl setăm ca variabilă de mediu pentru ca procesul Node să îl vadă
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 # Install packages
 RUN npm ci
 
