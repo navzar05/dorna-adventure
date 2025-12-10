@@ -45,8 +45,8 @@ export default function Landing() {
             }}
         >
         {/* Note: Files in /public are served from root, so use /landing.mp4 not /public/landing.mp4 */}
-        <source src="/landing.mp4" type="video/mp4" />
-        <source src="/landing.webm" type="video/webm" />
+        <source src="https://pub-f66c9e3e8f8547aab3ba20f2abafee46.r2.dev/images/landing.mp4" type="video/mp4" />
+        <source src="https://pub-f66c9e3e8f8547aab3ba20f2abafee46.r2.dev/images/landing.webm" type="video/webm" />
         Your browser does not support the video tag.
         </Box>
 
