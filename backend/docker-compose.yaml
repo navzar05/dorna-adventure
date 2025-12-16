@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: api_account
+      POSTGRES_PASSWORD: testpassword
+      POSTGRES_DB: dorna_adventure_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
