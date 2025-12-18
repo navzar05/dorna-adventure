@@ -31,3 +31,18 @@ export interface EmployeeWorkHour {
   endTime: string; // HH:mm format
   isAvailable: boolean;
 }
+
+
+export interface EmployeeWorkHourUpdate {
+  workDate: string;
+  startTime?: string | null;
+  endTime?: string | null;
+  isAvailable: boolean;
+}
+
+export interface EmployeeWorkHourBulkCreate {
+  workDates: string[];
+  startTime?: string | null;
+  endTime?: string | null;
+  isAvailable: boolean;
+}

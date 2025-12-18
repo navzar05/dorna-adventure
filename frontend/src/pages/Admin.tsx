@@ -150,7 +150,6 @@ export default function Admin() {
   };
 
   const activityColumns: GridColDef<Activity>[] = [
-    { field: 'id', headerName: t('admin.dataGrid.id'), width: 70 },
     { 
       field: 'name', 
       headerName: t('admin.dataGrid.name'), 
@@ -217,7 +216,6 @@ export default function Admin() {
   ];
 
   const categoryColumns: GridColDef<Category>[] = [
-    { field: 'id', headerName: t('admin.dataGrid.id'), width: 70 },
     { 
       field: 'name', 
       headerName: t('admin.dataGrid.name'), 
@@ -301,7 +299,6 @@ export default function Admin() {
   };
 
   const employeeColumns: GridColDef<Employee>[] = [
-    { field: 'id', headerName: t('admin.dataGrid.id'), width: 70 },
     { field: 'username', headerName: t('admin.employees.username'), width: 150 },
     { field: 'email', headerName: t('admin.employees.email'), flex: 1, minWidth: 200 },
     { field: 'firstName', headerName: t('admin.employees.firstName'), width: 150 },

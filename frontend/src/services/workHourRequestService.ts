@@ -1,62 +1,57 @@
 // src/services/workHourRequestService.ts
 import api from './api';
-import type { WorkHourRequest, WorkHourRequestCreate, EmployeeWorkHour } from '../types/workHourRequest';
+import type { WorkHourRequest, WorkHourRequestCreate, EmployeeWorkHour, EmployeeWorkHourBulkCreate, EmployeeWorkHourUpdate } from '../types/workHourRequest';
+
 
 export const workHourRequestService = {
   // Employee endpoints
   getMyWorkHours: () => 
-    api.get<EmployeeWorkHour[]>('/work-hours/my-hours'),  // Removed /v1
-  
+    api.get<EmployeeWorkHour[]>('/work-hours/my-hours'),
+
   getMyWorkHoursByDateRange: (startDate: string, endDate: string) =>
-    api.get<EmployeeWorkHour[]>(`/work-hours/my-hours/range?startDate=${startDate}&endDate=${endDate}`),
-  
-  createRequest: (data: WorkHourRequestCreate) => 
+    api.get<EmployeeWorkHour[]>('/work-hours/my-hours/range', {
+      params: { startDate, endDate }
+    }),
+
+  createRequest: (data: WorkHourRequestCreate) =>
     api.post<WorkHourRequest>('/work-hours/requests', data),
-  
-  getMyRequests: () => 
+
+  getMyRequests: () =>
     api.get<WorkHourRequest[]>('/work-hours/requests/my-requests'),
-  
-  cancelRequest: (id: number) => 
+
+  cancelRequest: (id: number) =>
     api.delete(`/work-hours/requests/${id}`),
-  
+
   // Admin endpoints
-  getAllRequests: () => 
+  getAllRequests: () =>
     api.get<WorkHourRequest[]>('/work-hours/requests'),
-  
+
   getPendingRequests: () =>
     api.get<WorkHourRequest[]>('/work-hours/requests/pending'),
-  
-  approveRequest: (id: number) => 
+
+  approveRequest: (id: number) =>
     api.put<WorkHourRequest>(`/work-hours/requests/${id}/approve`),
-  
-  rejectRequest: (id: number, reason?: string) => 
+
+  rejectRequest: (id: number, reason?: string) =>
     api.put<WorkHourRequest>(`/work-hours/requests/${id}/reject`, { reason }),
-  
-  getEmployeeWorkHours: (employeeId: number) => 
+
+  getEmployeeWorkHours: (employeeId: number) =>
     api.get<EmployeeWorkHour[]>(`/work-hours/employee/${employeeId}`),
-  
+
   getEmployeeWorkHoursByDateRange: (employeeId: number, startDate: string, endDate: string) =>
-    api.get<EmployeeWorkHour[]>(`/work-hours/employee/${employeeId}/range?startDate=${startDate}&endDate=${endDate}`),
-  
-  updateEmployeeWorkHours: (employeeId: number, data: {
-    workDate: string;
-    startTime: string;
-    endTime: string;
-    isAvailable: boolean;
-  }) => 
+    api.get<EmployeeWorkHour[]>(`/work-hours/employee/${employeeId}/range`, {
+      params: { startDate, endDate }
+    }),
+
+  updateEmployeeWorkHours: (employeeId: number, data: EmployeeWorkHourUpdate) =>
     api.put<EmployeeWorkHour>(`/work-hours/employee/${employeeId}`, data),
-  
-  createBulkEmployeeWorkHours: (employeeId: number, data: {
-    workDates: string[];
-    startTime: string;
-    endTime: string;
-    isAvailable: boolean;
-  }) =>
+
+  createBulkEmployeeWorkHours: (employeeId: number, data: EmployeeWorkHourBulkCreate) =>
     api.post<EmployeeWorkHour[]>(`/work-hours/employee/${employeeId}/bulk`, data),
-  
-  deleteEmployeeWorkHour: (id: number) => 
+
+  deleteEmployeeWorkHour: (id: number) =>
     api.delete(`/work-hours/employee/hours/${id}`),
-  
+
   deleteEmployeeWorkHourByDate: (employeeId: number, workDate: string) =>
     api.delete(`/work-hours/employee/${employeeId}/date/${workDate}`),
 };

@@ -198,7 +198,7 @@ const Navbar = () => {
             }}
             onClick={() => navigate('/')}
           />
-          <Typography
+          {/* <Typography
             variant="h6"
             noWrap
             component="a"
@@ -216,7 +216,7 @@ const Navbar = () => {
             }}
           >
             Dorna
-          </Typography>
+          </Typography> */}
 
           {/* Desktop Menu */}
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: 1 }}>

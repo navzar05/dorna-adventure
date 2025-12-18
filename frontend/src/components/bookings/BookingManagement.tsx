@@ -365,11 +365,6 @@ const handleConfirmSwap = async (selectedBookingId: number) => {
 
   const columns: GridColDef<Booking>[] = [
     { 
-      field: 'id', 
-      headerName: t('admin.dataGrid.id'), 
-      width: 70 
-    },
-    { 
       field: 'activityName', 
       headerName: t('admin.bookings.activityName'), 
       flex: 1, 
