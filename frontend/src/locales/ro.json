@@ -250,6 +250,9 @@
     "selectTime": "Selectează ora",
     "participants": "Număr de participanți",
     "participantsRange": "participanți",
+    "selectEmployee": "Selectează Ghidul (Opțional)",
+    "selectEmployeeLabel": "Alege Ghid",
+    "anyEmployee": "Oricare Ghid Disponibil",
     "notes": "Note Suplimentare",
     "notesPlaceholder": "Cereri speciale sau informații...",
     "priceSummary": "Sumar preț",
@@ -264,14 +267,14 @@
     "updatingAvailability": "Actualizare disponibilitate...",
     "availabilityBasedOnParticipants": "Intervalele afișate sunt disponibile pentru {{count}} participant/participanți. Modifică numărul de participanți pentru a vedea disponibilitatea actualizată.",
     "availabilityBasedOnParticipants_plural": "Intervalele afișate sunt disponibile pentru {{count}} participant/participanți. Modifică numărul de participanți pentru a vedea disponibilitatea actualizată.",
-    
+
     "status": {
       "pending": "În Așteptare",
       "confirmed": "Confirmată",
       "cancelled": "Anulată",
       "completed": "Finalizată"
     },
-    
+
     "errors": {
       "selectDateTime": "Te rugăm să selectezi data și ora",
       "loadSlotsFailed": "Eroare la încărcarea intervalelor disponibile",
@@ -295,7 +298,9 @@
     "requestApproved": "Cerere aprobată cu succes",
     "requestRejected": "Cerere respinsă",
     "requestCancelled": "Cerere anulată",
+    "workHourDeleted": "Program de lucru șters cu succes",
     "confirmCancelRequest": "Sigur vrei să anulezi această cerere?",
+    "confirmDeleteWorkHour": "Sigur vrei să ștergi programul de lucru pentru {{date}}?",
     "confirmDelete": "Sigur vrei să ștergi acest program?",
     "dayOfWeek": "Ziua Săptămânii",
     "startTime": "Ora de Început",
@@ -402,20 +407,32 @@
       "saveSuccess": "Setări salvate cu succes",
       "saveError": "Eroare la salvarea setărilor",
       "loadError": "Eroare la încărcarea setărilor",
-      
+
+      "generalTab": "General",
+      "aboutUsTab": "Despre Noi",
+
       "companyInfo": "Informații Companie",
       "companyName": "Nume Companie",
       "companyDescription": "Descriere",
-      
+
       "contactInfo": "Informații Contact",
       "email": "Email",
       "phone": "Telefon",
       "address": "Adresă",
-      
+
       "socialMedia": "Social Media",
       "facebook": "URL Facebook",
       "instagram": "URL Instagram",
       "twitter": "URL Twitter",
+
+      "aboutUsSection": "Conținut Despre Noi",
+      "aboutUsTitle": "Titlu Pagină",
+      "aboutUsContent": "Conținut",
+      "aboutUsMedia": "Galerie Media",
+      "addImages": "Adaugă Imagini",
+      "newMedia": "Media Nouă",
+      "existingMedia": "Media Existentă",
+      "noMediaUrls": "Nicio media adăugată încă. Apasă 'Adaugă Imagini' pentru a încărca.",
       
       "legalPages": "Pagini Legale",
       "aboutUs": "URL Despre Noi",
@@ -479,7 +496,8 @@
     "activitySteps": {
       "basicInfo": "Informații de bază",
       "details": "Detalii",
-      "media": "Media"
+      "media": "Media",
+      "employees": "Asignare Angajați"
     },
     
     "activityFields": {
@@ -508,7 +526,12 @@
       "addVideos": "Adaugă video-uri",
       "noImages": "Nu există imagini adăugate. Apasă 'Adaugă Imagini' pentru a încărca.",
       "noVideos": "Nu există video-uri adăugate. Apasă 'Adaugă Video-uri' pentru a încărca.",
-      "mediaNote": "Fișierele vor fi încărcate când salvezi activitatea. Formate acceptate: JPG, PNG, GIF pentru imagini; MP4, WebM pentru video-uri."
+      "mediaNote": "Fișierele vor fi încărcate când salvezi activitatea. Formate acceptate: JPG, PNG, GIF pentru imagini; MP4, WebM pentru video-uri.",
+      "enableEmployeeSelection": "Permite clienților să selecteze un angajat/ghid",
+      "employeeSelectionHelp": "Când este activat, clienții pot alege ghidul preferat la rezervare",
+      "selectEmployees": "Asignează Angajați la Această Activitate",
+      "noEmployeesAvailable": "Nu există angajați disponibili. Creează mai întâi angajați în secțiunea Angajați.",
+      "employeeSelectionDisabledInfo": "Selecția angajatului este dezactivată. Angajații vor fi asignați automat de sistem."
     },
     
     "categoryFields": {
@@ -702,7 +725,8 @@
       "filesUploaded": "fișiere încărcate",
       "failedFiles": "Fișiere eșuate",
       "filesUploadedSuccessfully": "fișiere încărcate cu succes",
-      "mediaDeleteWarning": "{{count}} element(e) media vor fi șterse permanent când salvezi."
+      "mediaDeleteWarning": "{{count}} element(e) media vor fi șterse permanent când salvezi.",
+      "employeeAssignmentError": "Eroare la asignarea angajaților"
     }
   },
   
@@ -734,6 +758,12 @@
     "network": "Eroare de rețea. Te rugăm să verifici conexiunea.",
     "unauthorized": "Nu ești autorizat să efectuezi această acțiune.",
     "notFound": "Resursa solicitată nu a fost găsită.",
-    "serverError": "Eroare de server. Te rugăm să încerci din nou mai târziu."
+    "serverError": "Eroare de server. Te rugăm să încerci din nou mai târziu.",
+    "fetchFailed": "Încărcarea datelor a eșuat. Te rugăm să încerci din nou."
+  },
+
+  "aboutUs": {
+    "defaultTitle": "Despre Noi",
+    "noContent": "Conținut indisponibil momentan."
   }
 }

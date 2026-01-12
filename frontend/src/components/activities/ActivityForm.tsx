@@ -35,11 +35,14 @@ import {
   CloudUpload as UploadIcon,
   LocationOn as LocationIcon,
   Check as CheckIcon,
+  Edit as EditIcon,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { mediaService } from '../../services/mediaService';
-import type { Activity, Category, LocationDetails } from '../../types/activity';
+import { employeeService } from '../../services/employeeService';
+import type { Activity, Category, LocationDetails, ActivityTimeSlot } from '../../types/activity';
+import type { Employee } from '../../types/employee';
 
 interface ActivityFormProps {
   open: boolean;
@@ -104,6 +107,7 @@ const getInitialFormData = (activity: Activity | null | undefined): Partial<Acti
       postalCode: '',
     },
     active: true,
+    timeSlots: [],
   };
 };
 
@@ -229,6 +233,16 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
   const [parsingLocation, setParsingLocation] = useState(false);
   const [locationError, setLocationError] = useState('');
 
+  // Time slot management state
+  const [timeSlots, setTimeSlots] = useState<ActivityTimeSlot[]>([]);
+  const [editingSlot, setEditingSlot] = useState<ActivityTimeSlot | null>(null);
+
+  // Employee assignment state
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>([]);
+  const [employeeSelectionEnabled, setEmployeeSelectionEnabled] = useState(false);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
+
   const handleEnter = () => {
     setFormData(getInitialFormData(activity));
     setActiveTab(0);
@@ -237,6 +251,24 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
     setUploadProgress(0);
     setMapsUrl('');
     setLocationError('');
+    setTimeSlots(activity?.timeSlots || []);
+    setEditingSlot(null);
+    setEmployeeSelectionEnabled(activity?.employeeSelectionEnabled || false);
+    setSelectedEmployeeIds(activity?.assignedEmployees?.map(e => e.id) || []);
+    loadEmployees();
+  };
+
+  const loadEmployees = async () => {
+    try {
+      setLoadingEmployees(true);
+      const response = await employeeService.getAllEmployees();
+      setEmployees(response.data);
+    } catch (error) {
+      console.error('Failed to load employees:', error);
+      toast.error(t('errors.loadEmployeesFailed'));
+    } finally {
+      setLoadingEmployees(false);
+    }
   };
 
   const handleChange = (field: keyof Activity, value: any) => {
@@ -259,7 +291,7 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
   };
 
   const handleNext = () => {
-    setActiveTab(prev => Math.min(prev + 1, 2));
+    setActiveTab(prev => Math.min(prev + 1, 3));
   };
 
   const handlePrevious = () => {
@@ -374,6 +406,51 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
     });
   };
 
+  // Time slot handlers
+  const handleAddTimeSlot = () => {
+    const newSlot: ActivityTimeSlot = {
+      startTime: '09:00',
+      endTime: '17:00',
+      active: true,
+    };
+    setEditingSlot(newSlot);
+  };
+
+  const handleSaveTimeSlot = () => {
+    if (!editingSlot) return;
+
+    // Validation
+    if (editingSlot.startTime >= editingSlot.endTime) {
+      toast.error('Start time must be before end time');
+      return;
+    }
+
+    if (editingSlot.id) {
+      // Update existing slot
+      setTimeSlots(prev =>
+        prev.map(slot => (slot.id === editingSlot.id ? editingSlot : slot))
+      );
+    } else {
+      // Add new slot with temporary ID
+      setTimeSlots(prev => [...prev, { ...editingSlot, id: Date.now() }]);
+    }
+
+    setEditingSlot(null);
+  };
+
+  const handleEditTimeSlot = (slot: ActivityTimeSlot) => {
+    setEditingSlot({ ...slot });
+  };
+
+  const handleDeleteTimeSlot = (slotId: number | undefined) => {
+    if (!slotId) return;
+    setTimeSlots(prev => prev.filter(slot => slot.id !== slotId));
+  };
+
+  const handleCancelEditSlot = () => {
+    setEditingSlot(null);
+  };
+
   // Upload files to server
   const uploadFiles = async (activityId: number) => {
     const totalFiles = imageFiles.length + videoFiles.length;
@@ -456,7 +533,7 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
 
     try {
       setLoading(true);
-      
+
       // Prepare data for backend
       const dataToSend = {
         name: formData.name,
@@ -470,16 +547,19 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
         locationDetails: formData.locationDetails,
         categoryId: formData.category?.id,
         active: formData.active,
-      };
-      
-      // Save activity first and get the saved activity with ID
+        timeSlots: timeSlots,
+        employeeSelectionEnabled: employeeSelectionEnabled,
+        employeeIds: employeeSelectionEnabled ? selectedEmployeeIds : []
+    };
+
+      // Save activity with employee assignments in one request
       const savedActivity = await onSave(dataToSend);
-      
+
       // Upload files if any
       if (imageFiles.length > 0 || videoFiles.length > 0) {
         await uploadFiles(savedActivity.id);
       }
-      
+
       // Clean up object URLs
       imageFiles.forEach(file => {
         if (file.preview) URL.revokeObjectURL(file.preview);
@@ -487,11 +567,11 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
       videoFiles.forEach(file => {
         if (file.preview) URL.revokeObjectURL(file.preview);
       });
-      
+
       onClose();
       toast.success(
-        activity 
-          ? t('admin.messages.activityUpdated') 
+        activity
+          ? t('admin.messages.activityUpdated')
           : t('admin.messages.activityCreated')
       );
     } catch (error) {
@@ -500,6 +580,8 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
     } finally {
       setLoading(false);
     }
+
+    console.log('Final form data to submit:', formData)
   };
 
   const isSubmitting = loading || uploadingFiles;
@@ -535,28 +617,60 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
           </Box>
         )}
 
-        <Tabs 
-          value={activeTab} 
-          onChange={handleTabChange} 
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
           centered
           sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
         >
           <Tab label={t('admin.activitySteps.basicInfo')} id="activity-tab-0" disabled={isSubmitting} />
           <Tab label={t('admin.activitySteps.details')} id="activity-tab-1" disabled={isSubmitting} />
-          <Tab 
+          <Tab
             label={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {t('admin.activitySteps.media')}
-                {(imageFiles.length > 0 || videoFiles.length > 0) && (
-                  <Chip 
-                    label={imageFiles.length + videoFiles.length} 
-                    size="small" 
+                Schedule
+                {timeSlots.length > 0 && (
+                  <Chip
+                    label={timeSlots.length}
+                    size="small"
                     color="primary"
                   />
                 )}
               </Box>
-            } 
+            }
             id="activity-tab-2"
+            disabled={isSubmitting}
+          />
+          <Tab
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {t('admin.activitySteps.media')}
+                {(imageFiles.length > 0 || videoFiles.length > 0) && (
+                  <Chip
+                    label={imageFiles.length + videoFiles.length}
+                    size="small"
+                    color="primary"
+                  />
+                )}
+              </Box>
+            }
+            id="activity-tab-3"
+            disabled={isSubmitting}
+          />
+          <Tab
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {t('admin.activitySteps.employees')}
+                {selectedEmployeeIds.length > 0 && (
+                  <Chip
+                    label={selectedEmployeeIds.length}
+                    size="small"
+                    color="primary"
+                  />
+                )}
+              </Box>
+            }
+            id="activity-tab-4"
             disabled={isSubmitting}
           />
         </Tabs>
@@ -796,6 +910,124 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
         </TabPanel>
 
         <TabPanel value={activeTab} index={2}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h6">Activity Time Slots</Typography>
+              <Button
+                variant="contained"
+                onClick={handleAddTimeSlot}
+                disabled={isSubmitting || editingSlot !== null}
+              >
+                Add Time Slot
+              </Button>
+            </Box>
+
+            <Alert severity="info">
+              Define when this activity can start and by when it must finish. Activities can only begin at the exact start time specified, and must complete before the end time. If no time slots are set, the activity can be booked at any time.
+            </Alert>
+
+            {editingSlot && (
+              <Paper variant="outlined" sx={{ p: 2, bgcolor: 'action.hover' }}>
+                <Typography variant="subtitle2" gutterBottom>
+                  {editingSlot.id ? 'Edit Time Slot' : 'New Time Slot'}
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <TextField
+                      label="Start Time"
+                      type="time"
+                      value={editingSlot.startTime}
+                      onChange={(e) => setEditingSlot({ ...editingSlot, startTime: e.target.value })}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                    />
+                    <TextField
+                      label="End Time"
+                      type="time"
+                      value={editingSlot.endTime}
+                      onChange={(e) => setEditingSlot({ ...editingSlot, endTime: e.target.value })}
+                      fullWidth
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Box>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={editingSlot.active}
+                        onChange={(e) => setEditingSlot({ ...editingSlot, active: e.target.checked })}
+                      />
+                    }
+                    label="Active"
+                  />
+                  <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                    <Button onClick={handleCancelEditSlot} variant="outlined">
+                      Cancel
+                    </Button>
+                    <Button onClick={handleSaveTimeSlot} variant="contained">
+                      Save
+                    </Button>
+                  </Box>
+                </Box>
+              </Paper>
+            )}
+
+            {timeSlots.length > 0 ? (
+              <Paper variant="outlined">
+                <List>
+                  {timeSlots.map((slot, index) => (
+                    <ListItem
+                      key={slot.id}
+                      sx={{
+                        borderBottom: index < timeSlots.length - 1 ? 1 : 0,
+                        borderColor: 'divider',
+                      }}
+                    >
+                      <ListItemText
+                        primary={`${slot.startTime} - ${slot.endTime}`}
+                        secondary={slot.active ? 'Active' : 'Inactive'}
+                      />
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          edge="end"
+                          onClick={() => handleEditTimeSlot(slot)}
+                          disabled={isSubmitting || editingSlot !== null}
+                          sx={{ mr: 1 }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          edge="end"
+                          onClick={() => handleDeleteTimeSlot(slot.id)}
+                          color="error"
+                          disabled={isSubmitting || editingSlot !== null}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
+            ) : (
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 3,
+                  textAlign: 'center',
+                  bgcolor: 'action.hover',
+                  border: '2px dashed',
+                  borderColor: 'divider',
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  No time slots defined. Activity can be booked at any time.
+                </Typography>
+              </Paper>
+            )}
+          </Box>
+        </TabPanel>
+
+        <TabPanel value={activeTab} index={3}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Images Section */}
             <Box>
@@ -986,6 +1218,73 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
             </Typography>
           </Box>
         </TabPanel>
+
+        <TabPanel value={activeTab} index={4}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={employeeSelectionEnabled}
+                    onChange={(e) => setEmployeeSelectionEnabled(e.target.checked)}
+                    disabled={isSubmitting}
+                  />
+                }
+                label={t('admin.activityFields.enableEmployeeSelection')}
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
+                {t('admin.activityFields.employeeSelectionHelp')}
+              </Typography>
+            </Box>
+
+            {employeeSelectionEnabled && (
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>
+                  {t('admin.activityFields.selectEmployees')}
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
+
+                {loadingEmployees ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : employees.length === 0 ? (
+                  <Alert severity="info">
+                    {t('admin.activityFields.noEmployeesAvailable')}
+                  </Alert>
+                ) : (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {employees.map((employee) => (
+                      <FormControlLabel
+                        key={employee.id}
+                        control={
+                          <Checkbox
+                            checked={selectedEmployeeIds.includes(employee.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedEmployeeIds(prev => [...prev, employee.id]);
+                              } else {
+                                setSelectedEmployeeIds(prev => prev.filter(id => id !== employee.id));
+                              }
+                            }}
+                            disabled={isSubmitting}
+                          />
+                        }
+                        label={`${employee.firstName} ${employee.lastName} (${employee.username})`}
+                      />
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            )}
+
+            {!employeeSelectionEnabled && (
+              <Alert severity="info">
+                {t('admin.activityFields.employeeSelectionDisabledInfo')}
+              </Alert>
+            )}
+          </Box>
+        </TabPanel>
       </DialogContent>
 
       <DialogActions sx={{ justifyContent: 'space-between', px: 3, py: 2 }}>
@@ -1000,9 +1299,9 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
           <Button onClick={onClose} sx={{ mr: 1 }} disabled={isSubmitting}>
             {t('admin.cancel')}
           </Button>
-          {activeTab === 2 ? (
-            <Button 
-              onClick={handleSubmit} 
+          {activeTab === 4 ? (
+            <Button
+              onClick={handleSubmit}
               variant="contained"
               disabled={isSubmitting}
             >

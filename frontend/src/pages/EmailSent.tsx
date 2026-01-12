@@ -81,11 +81,11 @@ export default function EmailSent() {
           {t('auth.verify.sentMessage', 'We have sent a verification link to your email address. Please check your inbox (and spam folder) and click the link to activate your account.')}
         </Typography>
 
-        {email && (
+        {/* {email && (
           <Typography variant="body2" fontWeight="bold" color="primary" sx={{ mb: 4 }}>
             {email}
           </Typography>
-        )}
+        )} */}
 
         {message && (
           <Alert severity={message.type} sx={{ mb: 3, textAlign: 'left' }}>

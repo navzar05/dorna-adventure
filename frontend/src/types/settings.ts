@@ -8,4 +8,7 @@ export interface Settings {
   facebookUrl: string;
   instagramUrl: string;
   twitterUrl: string;
+  aboutUsTitle: string;
+  aboutUsContent: string;
+  aboutUsMediaUrls: string[];
 }

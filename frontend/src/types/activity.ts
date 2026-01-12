@@ -8,6 +8,20 @@ export interface LocationDetails {
   postalCode?: string;
 }
 
+export interface ActivityTimeSlot {
+  id?: number;
+  startTime: string; // HH:mm format
+  endTime: string; // HH:mm format
+  active: boolean;
+}
+
+export interface AssignedEmployee {
+  id: number;
+  firstName: string;
+  lastName: string;
+  username: string;
+}
+
 export interface Activity {
   id: number;
   name: string;
@@ -23,9 +37,12 @@ export interface Activity {
   locationDetails?: LocationDetails;
   category: Category;
   active: boolean;
+  employeeSelectionEnabled: boolean;
   imageUrls: string[];
   videoUrls: string[];
   mediaList?: Media[];
+  timeSlots: ActivityTimeSlot[];
+  assignedEmployees: AssignedEmployee[];
 }
 
 export interface Category {

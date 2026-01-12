@@ -37,6 +37,7 @@ export interface BookingRequest {
   startTime: string; // HH:mm format
   numberOfParticipants: number;
   notes?: string;
+  employeeId?: number;
 }
 
 export interface TimeSlot {

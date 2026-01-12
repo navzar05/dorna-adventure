@@ -35,7 +35,6 @@
     "welcome": "Welcome to Bucovina",
     "description": "Discover amazing outdoor activities and unforgettable experiences in the heart of Romania's most beautiful region."
   },
-  
   "home": {
     "title": "Discover amazing activities",
     "subtitle": "Explore unique experiences in Bucovina",
@@ -201,6 +200,9 @@
     "selectTime": "Select Time",
     "participants": "Number of Participants",
     "participantsRange": "participants",
+    "selectEmployee": "Select Your Guide (Optional)",
+    "selectEmployeeLabel": "Choose Guide",
+    "anyEmployee": "Any Available Guide",
     "notes": "Additional Notes",
     "notesPlaceholder": "Any special requests or information...",
     "priceSummary": "Price Summary",
@@ -210,17 +212,18 @@
     "success": "Booking created successfully!",
     "noSlotsAvailable": "No time slots available for the selected date.",
     "bookNow": "Book Now",
+    "successPendingApproval": "Booking request submitted! Wait for admin approval to proceed with payment.",
     "updatingAvailability": "Updating availability...",
     "availabilityBasedOnParticipants": "Time slots shown are available for {{count}} participant(s). Change the number of participants to see updated availability.",
     "availabilityBasedOnParticipants_plural": "Time slots shown are available for {{count}} participants. Change the number of participants to see updated availability.",
-    
+
     "status": {
       "pending": "Pending",
       "confirmed": "Confirmed",
       "cancelled": "Cancelled",
       "completed": "Completed"
     },
-    
+
     "errors": {
       "selectDateTime": "Please select both date and time",
       "loadSlotsFailed": "Failed to load available time slots",
@@ -273,7 +276,9 @@
     "requestApproved": "Request approved successfully",
     "requestRejected": "Request rejected",
     "requestCancelled": "Request cancelled",
+    "workHourDeleted": "Work hour deleted successfully",
     "confirmCancelRequest": "Are you sure you want to cancel this request?",
+    "confirmDeleteWorkHour": "Are you sure you want to delete the work hour for {{date}}?",
     "confirmDelete": "Are you sure you want to delete this schedule?",
     "dayOfWeek": "Day of week",
     "startTime": "Start time",
@@ -351,29 +356,41 @@
       "saveSuccess": "Settings saved successfully",
       "saveError": "Failed to save settings",
       "loadError": "Failed to load settings",
-      
+
+      "generalTab": "General",
+      "aboutUsTab": "About Us",
+
       "companyInfo": "Company Information",
       "companyName": "Company Name",
       "companyDescription": "Description",
-      
+
       "contactInfo": "Contact Information",
       "email": "Email",
       "phone": "Phone",
       "address": "Address",
-      
+
       "socialMedia": "Social Media",
       "facebook": "Facebook URL",
       "instagram": "Instagram URL",
       "twitter": "Twitter URL",
-      
+
+      "aboutUsSection": "About Us Content",
+      "aboutUsTitle": "Page Title",
+      "aboutUsContent": "Content",
+      "aboutUsMedia": "Media Gallery",
+      "addImages": "Add Images",
+      "newMedia": "New Media",
+      "existingMedia": "Existing Media",
+      "noMediaUrls": "No media added yet. Click 'Add Images' to upload.",
+
       "legalPages": "Legal Pages",
       "aboutUs": "About Us URL",
       "terms": "Terms & Conditions URL",
       "privacy": "Privacy Policy URL",
-      
+
       "optional": "Optional",
       "urlHint": "Relative (/page) or absolute URL (https://...)",
-      
+
       "validation": {
         "companyNameRequired": "Company name is required",
         "invalidEmail": "Invalid email address",
@@ -453,7 +470,8 @@
     "activitySteps": {
       "basicInfo": "Basic Information",
       "details": "Details",
-      "media": "Media"
+      "media": "Media",
+      "employees": "Employee Assignment"
     },
     
     "activityFields": {
@@ -482,7 +500,12 @@
       "addVideos": "Add Videos",
       "noImages": "No images added yet. Click 'Add Images' to upload.",
       "noVideos": "No videos added yet. Click 'Add Videos' to upload.",
-      "mediaNote": "Files will be uploaded when you save the activity. Supported formats: JPG, PNG, GIF for images; MP4, WebM for videos."
+      "mediaNote": "Files will be uploaded when you save the activity. Supported formats: JPG, PNG, GIF for images; MP4, WebM for videos.",
+      "enableEmployeeSelection": "Allow customers to select an employee/guide",
+      "employeeSelectionHelp": "When enabled, customers can choose their preferred employee/guide when booking this activity",
+      "selectEmployees": "Assign Employees to This Activity",
+      "noEmployeesAvailable": "No employees available. Create employees first in the Employees section.",
+      "employeeSelectionDisabledInfo": "Employee selection is disabled. Employees will be automatically assigned by the system."
     },
     
     "categoryFields": {
@@ -750,6 +773,12 @@
     "network": "Network error. Please check your connection.",
     "unauthorized": "You are not authorized to perform this action.",
     "notFound": "The requested resource was not found.",
-    "serverError": "Server error. Please try again later."
+    "serverError": "Server error. Please try again later.",
+    "fetchFailed": "Failed to load data. Please try again."
+  },
+
+  "aboutUs": {
+    "defaultTitle": "About Us",
+    "noContent": "No content available yet."
   }
 }

@@ -40,7 +40,7 @@ export default function Footer() {
   const textColor = theme.palette.primary.contrastText;
 
   const footerLinks = settings ? [
-    { label: t('footer.aboutUs'), path: '/aboutus' },
+    { label: t('footer.aboutUs'), path: '/about-us' },
     { label: t('footer.contact'), path: '/contact' },
     { label: t('footer.terms'), path: '/terms' },
     { label: t('footer.privacy'), path: '/privacy' },

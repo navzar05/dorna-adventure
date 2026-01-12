@@ -23,6 +23,7 @@ import EmployeeRoute from './components/shared/EmployeeRoute';
 import EmailSent from './pages/EmailSent';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import AboutUs from './pages/AboutUs';
 function App() {
   return (
               <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -90,6 +91,7 @@ function App() {
               />
               <Route path="/email-sent" element={<EmailSent />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/about-us" element={<AboutUs />} />
               <Route
                 path="/home"
                 element={<Home />}/>

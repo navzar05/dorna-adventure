@@ -181,6 +181,15 @@ const Navbar = () => {
                   <Typography sx={{ textAlign: 'center' }}>{t('admin.title')}</Typography>
                 </MenuItem>
               )}
+
+              {isEmployee && (
+              <MenuItem
+                onClick={() => navigate('/my-work-hours')}
+                color="inherit"
+              >
+                <Typography textAlign="center">{t('admin.workHours.title')}</Typography>
+              </MenuItem>
+              )}
             </Menu>
           </Box>
 

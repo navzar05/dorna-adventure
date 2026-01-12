@@ -124,6 +124,18 @@ export default function MyWorkHours() {
     }
   };
 
+  const handleDeleteWorkHour = async (id: number, date: string) => {
+    if (window.confirm(t('workHours.confirmDeleteWorkHour', { date }))) {
+      try {
+        await workHourRequestService.deleteMyWorkHour(id);
+        toast.success(t('workHours.workHourDeleted'));
+        fetchData();
+      } catch {
+        toast.error(t('workHours.deleteError'));
+      }
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'APPROVED':
@@ -207,27 +219,37 @@ export default function MyWorkHours() {
                       .sort((a, b) => a.workDate.localeCompare(b.workDate))
                       .map((hour) => (
                         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={hour.id}>
-                          <Card variant="outlined" sx={{ 
+                          <Card variant="outlined" sx={{
                             bgcolor: hour.isAvailable ? 'success.lighter' : 'action.hover',
                             borderColor: hour.isAvailable ? 'success.main' : 'divider'
                           }}>
                             <CardContent>
                               <Stack spacing={1}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <CalendarIcon fontSize="small" color="primary" />
-                                  <Typography variant="subtitle2" fontWeight="bold">
-                                    {dayjs(hour.workDate).format('ddd, MMM D, YYYY')}
-                                  </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                                    <CalendarIcon fontSize="small" color="primary" />
+                                    <Typography variant="subtitle2" fontWeight="bold">
+                                      {dayjs(hour.workDate).format('ddd, MMM D, YYYY')}
+                                    </Typography>
+                                  </Box>
+                                  <IconButton
+                                    size="small"
+                                    color="error"
+                                    onClick={() => handleDeleteWorkHour(hour.id, dayjs(hour.workDate).format('MMM D, YYYY'))}
+                                    sx={{ ml: 1 }}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
                                 </Box>
                                 {hour.isAvailable ? (
                                   <Typography variant="body2" color="text.secondary">
                                     {hour.startTime} - {hour.endTime}
                                   </Typography>
                                 ) : (
-                                  <Chip 
-                                    label={t('workHours.notAvailable')} 
-                                    size="small" 
-                                    color="default" 
+                                  <Chip
+                                    label={t('workHours.notAvailable')}
+                                    size="small"
+                                    color="default"
                                   />
                                 )}
                               </Stack>

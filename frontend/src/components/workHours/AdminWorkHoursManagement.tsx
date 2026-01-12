@@ -357,22 +357,20 @@ export default function AdminWorkHoursManagement() {
 
   // Get dates for selected month
   const getDatesForSelectedMonth = () => {
-    const startOfMonth = dayjs().year(selectedYear).month(selectedMonth).startOf('month');
-    const endOfMonth = startOfMonth.endOf('month');
-    const today = dayjs().startOf('day');
-    
-    const dates: Dayjs[] = [];
-    let currentDate = startOfMonth;
-    
-    while (currentDate.isBefore(endOfMonth) || currentDate.isSame(endOfMonth, 'day')) {
-      if (currentDate.isAfter(today) || currentDate.isSame(today, 'day')) {
-        dates.push(currentDate);
-      }
-      currentDate = currentDate.add(1, 'day');
-    }
-    
-    return dates;
-  };
+  const start = dayjs().year(selectedYear).month(selectedMonth).startOf('month');
+  const end = start.endOf('month');
+
+  const dates: Dayjs[] = [];
+  let d = start;
+
+  while (d.isSame(end, 'day') || d.isBefore(end)) {
+    dates.push(d);
+    d = d.add(1, 'day');
+  }
+
+  return dates;
+};
+
 
   // Get work hours for a specific date (returns array for multiple shifts)
   const getWorkHoursForDate = (date: Dayjs): EmployeeWorkHour[] => {
@@ -389,6 +387,7 @@ export default function AdminWorkHoursManagement() {
     }
   };
 
+
   // Get employee name by ID
   const getEmployeeName = (employeeId: number): string => {
     const employee = employees.find(emp => emp.id === employeeId);
@@ -398,16 +397,21 @@ export default function AdminWorkHoursManagement() {
   // Render calendar view
   const renderCalendarView = () => {
     const datesInMonth = getDatesForSelectedMonth();
-    const firstDayOfMonth = dayjs().year(selectedYear).month(selectedMonth).startOf('month');
+   const firstDayOfMonth = dayjs().year(selectedYear).month(selectedMonth).startOf('month');    // Get day of week (0 = Sunday, 1 = Monday, etc.)
     const startDayOfWeek = firstDayOfMonth.day();
+    // Convert to Monday-based week (0 = Monday, 6 = Sunday)
+    const startDayMondayBased = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+
+
     
     const weeks: (Dayjs | null)[][] = [[]];
     let currentWeek = 0;
-    
-    for (let i = 0; i < startDayOfWeek; i++) {
+
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < startDayMondayBased; i++) {
       weeks[currentWeek].push(null);
     }
-    
+
     datesInMonth.forEach(date => {
       if (weeks[currentWeek].length === 7) {
         currentWeek++;
@@ -415,12 +419,12 @@ export default function AdminWorkHoursManagement() {
       }
       weeks[currentWeek].push(date);
     });
-    
+
     while (weeks[currentWeek].length < 7) {
       weeks[currentWeek].push(null);
     }
-    
-    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     
     return (
       <Box>
@@ -446,7 +450,7 @@ export default function AdminWorkHoursManagement() {
               if (!date) {
                 return <Grid size={{ xs: 12/7 }} key={dayIndex} />;
               }
-              
+               const isPast = date.isBefore(dayjs().startOf('day'));
               const isSelected = selectedDates.some(
                 d => d.format('YYYY-MM-DD') === date.format('YYYY-MM-DD')
               );
@@ -456,8 +460,10 @@ export default function AdminWorkHoursManagement() {
               return (
                 <Grid size={{ xs: 12/7 }} key={dayIndex}>
                   <Box
-                    onClick={() => handleDateToggle(date)}
+                    onClick={() => !isPast && handleDateToggle(date)}
                     sx={{
+                      opacity: isPast ? 0.4 : 1,
+                      pointerEvents: isPast ? 'none' : 'auto',
                       minHeight: 60,
                       display: 'flex',
                       flexDirection: 'column',

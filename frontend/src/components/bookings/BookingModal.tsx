@@ -14,8 +14,12 @@ import {
   Chip,
   Alert,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
-import { Close as CloseIcon, Schedule as ScheduleIcon } from '@mui/icons-material';
+import { Close as CloseIcon, Schedule as ScheduleIcon, Person as PersonIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -36,17 +40,18 @@ interface BookingModalProps {
 
 export default function BookingModal({ open, onClose, activity, onSuccess }: BookingModalProps) {
   const { t } = useTranslation();
-  
+
   // State
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs().add(1, 'day'));
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [participants, setParticipants] = useState(activity.minParticipants);
   const [notes, setNotes] = useState('');
-  
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
+
   // Data State
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [availableDates, setAvailableDates] = useState<Set<string>>(new Set());
-  
+
   // Loading States
   const [loading, setLoading] = useState(false);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -54,6 +59,9 @@ export default function BookingModal({ open, onClose, activity, onSuccess }: Boo
 
   // Keep track of the currently viewed month in the calendar to prevent unnecessary fetches
   const currentViewMonth = useRef<Dayjs>(dayjs());
+
+  // Check if employee selection is enabled for this activity
+  const employeeSelectionEnabled = activity.employeeSelectionEnabled && activity.assignedEmployees && activity.assignedEmployees.length > 0;
 
   // --- 1. Fetch Monthly Availability (Green/Red dots on calendar) ---
   const fetchMonthAvailability = async (date: Dayjs, participantCount: number) => {
@@ -95,6 +103,7 @@ export default function BookingModal({ open, onClose, activity, onSuccess }: Boo
     } catch {
       toast.error(t('booking.errors.loadSlotsFailed'));
     } finally {
+      console.log(timeSlots);
       setLoadingSlots(false);
     }
   };
@@ -175,6 +184,7 @@ export default function BookingModal({ open, onClose, activity, onSuccess }: Boo
         startTime: selectedTime,
         numberOfParticipants: participants,
         notes: notes || undefined,
+        employeeId: selectedEmployeeId || undefined,
       });
 
       toast.success(t('booking.successPendingApproval'));
@@ -194,6 +204,7 @@ export default function BookingModal({ open, onClose, activity, onSuccess }: Boo
     setSelectedTime(null);
     setParticipants(activity.minParticipants);
     setNotes('');
+    setSelectedEmployeeId(null);
     setTimeSlots([]);
   };
 
@@ -272,6 +283,35 @@ export default function BookingModal({ open, onClose, activity, onSuccess }: Boo
               disabled={loading}
             />
           </Grid>
+
+          {/* Employee Selection */}
+          {employeeSelectionEnabled && (
+            <Grid size={{ xs: 12 }}>
+              <Typography variant="subtitle1" gutterBottom fontWeight={600}>
+                {t('booking.selectEmployee')}
+              </Typography>
+              <FormControl fullWidth>
+                <InputLabel id="employee-select-label">{t('booking.selectEmployeeLabel')}</InputLabel>
+                <Select
+                  labelId="employee-select-label"
+                  value={selectedEmployeeId || ''}
+                  onChange={(e) => setSelectedEmployeeId(e.target.value as number)}
+                  label={t('booking.selectEmployeeLabel')}
+                  disabled={loading}
+                  startAdornment={<PersonIcon sx={{ mr: 1, color: 'action.active' }} />}
+                >
+                  <MenuItem value="">
+                    <em>{t('booking.anyEmployee')}</em>
+                  </MenuItem>
+                  {activity.assignedEmployees?.map((employee) => (
+                    <MenuItem key={employee.id} value={employee.id}>
+                      {employee.firstName} {employee.lastName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          )}
 
           {/* ... Time Slots Grid (Same as before) ... */}
           <Grid size={{ xs: 12 }}>

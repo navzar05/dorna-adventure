@@ -22,6 +22,9 @@ export const workHourRequestService = {
   cancelRequest: (id: number) =>
     api.delete(`/work-hours/requests/${id}`),
 
+  deleteMyWorkHour: (id: number) =>
+    api.delete(`/work-hours/my-hours/${id}`),
+
   // Admin endpoints
   getAllRequests: () =>
     api.get<WorkHourRequest[]>('/work-hours/requests'),

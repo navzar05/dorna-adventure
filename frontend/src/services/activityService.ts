@@ -1,5 +1,5 @@
 import api from './api';
-import type { Activity } from '../types/activity';
+import type { Activity, ActivityTimeSlot } from '../types/activity';
 
 export const activityService = {
   getAllActivities: () => api.get<Activity[]>('/activities'),
@@ -21,11 +21,24 @@ export const activityService = {
   getMonthlyAvailability: (activityId: number, date: string, participants: number) => {
       // The 'date' param here is just to extract the Year and Month
       return api.get<string[]>(`/activities/${activityId}/availability/month`, {
-        params: { 
+        params: {
           date, // Send '2023-10-01'
-          participants 
+          participants
         }
       });
     },
+
+  // Time slot management
+  getActivityTimeSlots: (activityId: number) =>
+    api.get<ActivityTimeSlot[]>(`/activities/${activityId}/time-slots`),
+
+  createTimeSlot: (activityId: number, timeSlot: Omit<ActivityTimeSlot, 'id'>) =>
+    api.post<ActivityTimeSlot>(`/activities/${activityId}/time-slots`, timeSlot),
+
+  updateTimeSlot: (activityId: number, slotId: number, timeSlot: Omit<ActivityTimeSlot, 'id'>) =>
+    api.put<ActivityTimeSlot>(`/activities/${activityId}/time-slots/${slotId}`, timeSlot),
+
+  deleteTimeSlot: (activityId: number, slotId: number) =>
+    api.delete(`/activities/${activityId}/time-slots/${slotId}`),
 
 };

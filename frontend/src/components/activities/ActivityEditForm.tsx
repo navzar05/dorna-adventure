@@ -38,8 +38,10 @@ import {
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { mediaService } from '../../services/mediaService';
+import { employeeService } from '../../services/employeeService';
 import type { Activity, Category, LocationDetails } from '../../types/activity';
 import type { Media } from '../../types/media';
+import type { Employee } from '../../types/employee';
 
 interface ActivityEditFormProps {
   open: boolean;
@@ -102,15 +104,21 @@ export default function ActivityEditForm({ open, onClose, onSave, activity, cate
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadingFiles, setUploadingFiles] = useState(false);
-  
+
   // Existing media management
   const [existingMedia, setExistingMedia] = useState<Media[]>([]);
   const [mediaToDelete, setMediaToDelete] = useState<number[]>([]);
   const [loadingMedia, setLoadingMedia] = useState(false);
-  
+
   // New file management state
   const [newImageFiles, setNewImageFiles] = useState<FileWithPreview[]>([]);
   const [newVideoFiles, setNewVideoFiles] = useState<FileWithPreview[]>([]);
+
+  // Employee selection state
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<number[]>([]);
+  const [employeeSelectionEnabled, setEmployeeSelectionEnabled] = useState(false);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
 
   // Fetch existing media when dialog opens
   useEffect(() => {
@@ -132,6 +140,19 @@ export default function ActivityEditForm({ open, onClose, onSave, activity, cate
     }
   };
 
+  const loadEmployees = async () => {
+    try {
+      setLoadingEmployees(true);
+      const response = await employeeService.getAllEmployees();
+      setEmployees(response.data);
+    } catch (error) {
+      console.error('Error loading employees:', error);
+      toast.error('Failed to load employees');
+    } finally {
+      setLoadingEmployees(false);
+    }
+  };
+
   const handleEnter = () => {
     setFormData(getInitialFormData(activity));
     setActiveTab(0);
@@ -139,6 +160,13 @@ export default function ActivityEditForm({ open, onClose, onSave, activity, cate
     setNewVideoFiles([]);
     setMediaToDelete([]);
     setUploadProgress(0);
+
+    // Initialize employee selection state from activity
+    setEmployeeSelectionEnabled(activity.employeeSelectionEnabled || false);
+    setSelectedEmployeeIds(activity.assignedEmployees?.map(e => e.id) || []);
+
+    // Load employees
+    loadEmployees();
   };
 
   const handleChange = (field: keyof Activity, value: any) => {
@@ -160,11 +188,19 @@ export default function ActivityEditForm({ open, onClose, onSave, activity, cate
   };
 
   const handleNext = () => {
-    setActiveTab(prev => Math.min(prev + 1, 2));
+    setActiveTab(prev => Math.min(prev + 1, 3));
   };
 
   const handlePrevious = () => {
     setActiveTab(prev => Math.max(prev - 1, 0));
+  };
+
+  const handleEmployeeToggle = (employeeId: number) => {
+    setSelectedEmployeeIds(prev =>
+      prev.includes(employeeId)
+        ? prev.filter(id => id !== employeeId)
+        : [...prev, employeeId]
+    );
   };
 
   // Mark existing media for deletion
@@ -308,7 +344,7 @@ export default function ActivityEditForm({ open, onClose, onSave, activity, cate
   const handleSubmit = async () => {
     try {
       setLoading(true);
-      
+
       // Prepare data for backend
       const dataToSend = {
         name: formData.name,
@@ -322,12 +358,14 @@ export default function ActivityEditForm({ open, onClose, onSave, activity, cate
         locationDetails: formData.locationDetails,
         categoryId: formData.category?.id,
         active: formData.active,
+        employeeSelectionEnabled: employeeSelectionEnabled,
+        employeeIds: employeeSelectionEnabled ? selectedEmployeeIds : []
       };
-      
+
       // Delete marked media first
       await deleteMarkedMedia();
-      
-      // Update activity
+
+      // Update activity with employee assignments in one request
       const savedActivity = await onSave(dataToSend);
       
       // Upload new files if any
@@ -397,28 +435,44 @@ export default function ActivityEditForm({ open, onClose, onSave, activity, cate
           </Alert>
         )}
 
-        <Tabs 
-          value={activeTab} 
-          onChange={handleTabChange} 
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
           centered
           sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
         >
           <Tab label={t('admin.activitySteps.basicInfo')} id="activity-tab-0" disabled={isSubmitting} />
           <Tab label={t('admin.activitySteps.details')} id="activity-tab-1" disabled={isSubmitting} />
-          <Tab 
+          <Tab
             label={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {t('admin.activitySteps.media')}
                 {(existingImages.length + existingVideos.length + newImageFiles.length + newVideoFiles.length > 0) && (
-                  <Chip 
-                    label={existingImages.length + existingVideos.length + newImageFiles.length + newVideoFiles.length} 
-                    size="small" 
+                  <Chip
+                    label={existingImages.length + existingVideos.length + newImageFiles.length + newVideoFiles.length}
+                    size="small"
                     color="primary"
                   />
                 )}
               </Box>
-            } 
+            }
             id="activity-tab-2"
+            disabled={isSubmitting}
+          />
+          <Tab
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {t('admin.activitySteps.employees')}
+                {selectedEmployeeIds.length > 0 && (
+                  <Chip
+                    label={selectedEmployeeIds.length}
+                    size="small"
+                    color="primary"
+                  />
+                )}
+              </Box>
+            }
+            id="activity-tab-3"
             disabled={isSubmitting}
           />
         </Tabs>
@@ -902,11 +956,74 @@ export default function ActivityEditForm({ open, onClose, onSave, activity, cate
             </Box>
           )}
         </TabPanel>
+
+        <TabPanel value={activeTab} index={3}>
+          {loadingEmployees ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={employeeSelectionEnabled}
+                    onChange={(e) => setEmployeeSelectionEnabled(e.target.checked)}
+                    disabled={isSubmitting}
+                  />
+                }
+                label={t('admin.activityFields.enableEmployeeSelection')}
+              />
+
+              <Typography variant="body2" color="text.secondary">
+                {t('admin.activityFields.employeeSelectionHelp')}
+              </Typography>
+
+              {employeeSelectionEnabled ? (
+                <>
+                  <Divider />
+                  <Typography variant="h6">
+                    {t('admin.activityFields.selectEmployees')}
+                  </Typography>
+
+                  {employees.length === 0 ? (
+                    <Alert severity="info">
+                      {t('admin.activityFields.noEmployeesAvailable')}
+                    </Alert>
+                  ) : (
+                    <Paper variant="outlined" sx={{ maxHeight: 400, overflow: 'auto' }}>
+                      <List>
+                        {employees.map((employee) => (
+                          <ListItem key={employee.id}>
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={selectedEmployeeIds.includes(employee.id)}
+                                  onChange={() => handleEmployeeToggle(employee.id)}
+                                  disabled={isSubmitting}
+                                />
+                              }
+                              label={`${employee.firstName} ${employee.lastName} (${employee.username})`}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Paper>
+                  )}
+                </>
+              ) : (
+                <Alert severity="info">
+                  {t('admin.activityFields.employeeSelectionDisabledInfo')}
+                </Alert>
+              )}
+            </Box>
+          )}
+        </TabPanel>
       </DialogContent>
 
       <DialogActions sx={{ justifyContent: 'space-between', px: 3, py: 2 }}>
-        <Button 
-          onClick={handlePrevious} 
+        <Button
+          onClick={handlePrevious}
           disabled={activeTab === 0 || isSubmitting}
           variant="outlined"
         >
@@ -916,7 +1033,7 @@ export default function ActivityEditForm({ open, onClose, onSave, activity, cate
           <Button onClick={onClose} sx={{ mr: 1 }} disabled={isSubmitting}>
             {t('admin.cancel')}
           </Button>
-          {activeTab === 2 ? (
+          {activeTab === 3 ? (
             <Button 
               onClick={handleSubmit} 
               variant="contained"
