@@ -57,6 +57,13 @@ public class EmployeeWorkHourController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/my-hours/{id}")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
+    public ResponseEntity<Void> deleteMyWorkHour(@PathVariable Long id) {
+        employeeWorkHourService.deleteMyWorkHour(id);
+        return ResponseEntity.noContent().build();
+    }
+
     // Admin Endpoints
 
     @GetMapping("/requests")

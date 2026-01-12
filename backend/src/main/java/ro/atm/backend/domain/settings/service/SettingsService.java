@@ -37,6 +37,21 @@ public class SettingsService {
         settings.setFacebookUrl(settingsDTO.getFacebookUrl());
         settings.setInstagramUrl(settingsDTO.getInstagramUrl());
         settings.setTwitterUrl(settingsDTO.getTwitterUrl());
+        settings.setAboutUsTitle(settingsDTO.getAboutUsTitle());
+        settings.setAboutUsContent(settingsDTO.getAboutUsContent());
+
+        // Convert media URLs list to JSON string
+        if (settingsDTO.getAboutUsMediaUrls() != null) {
+            try {
+                com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                String mediaUrlsJson = objectMapper.writeValueAsString(settingsDTO.getAboutUsMediaUrls());
+                settings.setAboutUsMediaUrls(mediaUrlsJson);
+            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                settings.setAboutUsMediaUrls("[]");
+            }
+        } else {
+            settings.setAboutUsMediaUrls(null);
+        }
 
         Settings saved = settingsRepository.save(settings);
         return SettingsDTO.fromEntity(saved);
@@ -52,6 +67,9 @@ public class SettingsService {
                 .facebookUrl("https://facebook.com")
                 .instagramUrl("https://instagram.com")
                 .twitterUrl("https://twitter.com")
+                .aboutUsTitle("About Us")
+                .aboutUsContent("Welcome to Dorna Adventure!")
+                .aboutUsMediaUrls("[]")
                 .build();
 
         return settingsRepository.save(defaultSettings);

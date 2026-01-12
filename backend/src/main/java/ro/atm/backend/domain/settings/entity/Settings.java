@@ -43,4 +43,14 @@ public class Settings {
 
     @Column(length = 200)
     private String twitterUrl;
+
+    // About Us Section
+    @Column(length = 200)
+    private String aboutUsTitle;
+
+    @Column(columnDefinition = "TEXT")
+    private String aboutUsContent;
+
+    @Column(columnDefinition = "TEXT")
+    private String aboutUsMediaUrls; // Stored as JSON array string
 }

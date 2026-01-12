@@ -57,9 +57,20 @@ public class Activity {
     @Column(nullable = false)
     private Boolean active = true;
 
+    @Column(nullable = false)
+    private Boolean employeeSelectionEnabled = false;
+
     @OneToMany(mappedBy = "activity", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Media> mediaList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "activity", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ActivityTimeSlot> timeSlots = new ArrayList<>();
+
+    @OneToMany(mappedBy = "activity", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ActivityEmployee> activityEmployees = new ArrayList<>();
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -95,6 +106,26 @@ public class Activity {
     public void removeMedia(Media media) {
         mediaList.remove(media);
         media.setActivity(null);
+    }
+
+    public void addTimeSlot(ActivityTimeSlot timeSlot) {
+        timeSlots.add(timeSlot);
+        timeSlot.setActivity(this);
+    }
+
+    public void removeTimeSlot(ActivityTimeSlot timeSlot) {
+        timeSlots.remove(timeSlot);
+        timeSlot.setActivity(null);
+    }
+
+    public void addActivityEmployee(ActivityEmployee activityEmployee) {
+        activityEmployees.add(activityEmployee);
+        activityEmployee.setActivity(this);
+    }
+
+    public void removeActivityEmployee(ActivityEmployee activityEmployee) {
+        activityEmployees.remove(activityEmployee);
+        activityEmployee.setActivity(null);
     }
 
     public String getLocationIdentifier() {

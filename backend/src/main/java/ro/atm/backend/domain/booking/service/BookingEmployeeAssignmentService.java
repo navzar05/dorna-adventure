@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ro.atm.backend.domain.activity.entity.Activity;
 import ro.atm.backend.domain.activity.entity.ActivityCategory;
+import ro.atm.backend.domain.activity.service.ActivityTimeSlotService;
 import ro.atm.backend.domain.auth.entity.User;
 import ro.atm.backend.domain.booking.entity.Booking;
 import ro.atm.backend.domain.booking.repository.BookingRepository;
@@ -13,6 +14,7 @@ import ro.atm.backend.domain.user.repository.UserRepository;
 import ro.atm.backend.common.constants.SecurityConstants;
 import ro.atm.backend.common.exception.ResourceNotFoundException;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -29,12 +31,22 @@ public class BookingEmployeeAssignmentService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final ActivityTimeSlotService timeSlotService;
 
     /**
      * Find an available employee for a booking
+     * Also validates that the booking time falls within the activity's time slots
      */
     public User findAvailableEmployee(LocalDate date, LocalTime startTime, LocalTime endTime,
                                      Activity activity, int numberOfParticipants) {
+        // First, check if the booking time is valid for this activity
+        DayOfWeek dayOfWeek = date.getDayOfWeek();
+        if (!timeSlotService.isBookingTimeValid(activity.getId(), dayOfWeek, startTime, endTime)) {
+            log.warn("Booking time {}-{} on {} is not within activity {}'s allowed time slots",
+                    startTime, endTime, dayOfWeek, activity.getName());
+            return null;
+        }
+
         var employeeRole = roleRepository.findByName(SecurityConstants.Roles.EMPLOYEE)
                 .orElseThrow(() -> new ResourceNotFoundException("Role", SecurityConstants.Roles.EMPLOYEE));
 

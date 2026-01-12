@@ -7,6 +7,7 @@ import ro.atm.backend.domain.activity.entity.ActivityCategory;
 import ro.atm.backend.domain.activity.entity.LocationDetails;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @Builder
@@ -24,6 +25,8 @@ public class ActivityRequest {
     private LocationDetailsDTO locationDetails;
     private Long categoryId;
     private Boolean active;
+    private Boolean employeeSelectionEnabled;
+    private List<Long> employeeIds;
 
     public Activity toEntity(ActivityCategory category) {
         Activity activity = Activity.builder()
@@ -37,6 +40,7 @@ public class ActivityRequest {
                 .location(this.location)
                 .category(category)
                 .active(this.active != null ? this.active : true)
+                .employeeSelectionEnabled(this.employeeSelectionEnabled)
                 .build();
 
         // Set location details if provided
@@ -58,6 +62,7 @@ public class ActivityRequest {
         activity.setLocation(this.location);
         activity.setCategory(category);
         activity.setActive(this.active != null ? this.active : true);
+        activity.setEmployeeSelectionEnabled(this.employeeSelectionEnabled);
 
         // Update location details
         if (this.locationDetails != null) {

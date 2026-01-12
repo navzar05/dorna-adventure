@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ro.atm.backend.domain.activity.entity.Activity;
+import ro.atm.backend.domain.activity.entity.ActivityTimeSlot;
+import ro.atm.backend.domain.activity.repository.ActivityTimeSlotRepository;
 import ro.atm.backend.domain.auth.entity.User;
 import ro.atm.backend.domain.booking.dto.TimeSlotDTO;
 import ro.atm.backend.domain.booking.entity.Booking;
@@ -36,6 +38,7 @@ public class BookingSchedulingService {
     private final RoleRepository roleRepository;
     private final BookingEmployeeAssignmentService employeeAssignmentService;
     private final EmployeeWorkHourRepository employeeWorkHourRepository;
+    private final ActivityTimeSlotRepository activityTimeSlotRepository;
 
     /**
      * Get available time slots for an activity on a specific date
@@ -69,26 +72,51 @@ public class BookingSchedulingService {
         Set<TimeSlotDTO> slots = new HashSet<>();
         int durationMinutes = activity.getDurationMinutes();
 
-        // adding additional loop for more work hour intervals
-        for (EmployeeWorkHour workHour : workHours) {
+        // Get activity's defined time slots
+        List<ActivityTimeSlot> activityTimeSlots = activityTimeSlotRepository.findByActivityIdAndActiveTrue(activityId);
 
-            LocalTime currentTime = workHour.getStartTime();
+        if (!activityTimeSlots.isEmpty()) {
+            for (ActivityTimeSlot activitySlot : activityTimeSlots) {
+                LocalTime startTime = activitySlot.getStartTime();
+                LocalTime endTime = startTime.plusMinutes(durationMinutes);
 
-            while (currentTime.plusMinutes(durationMinutes).isBefore(workHour.getEndTime()) ||
-                    currentTime.plusMinutes(durationMinutes).equals(workHour.getEndTime())) {
+                if (!endTime.isAfter(activitySlot.getEndTime())) {
+                    boolean fallsWithinWorkHours = workHours.stream()
+                            .anyMatch(wh -> !startTime.isBefore(wh.getStartTime()) &&
+                                          !endTime.isAfter(wh.getEndTime()));
 
-                LocalTime endTime = currentTime.plusMinutes(durationMinutes);
+                    if (fallsWithinWorkHours) {
+                        boolean isAvailable = isTimeSlotAvailableForParticipants(
+                                startTime, endTime, date, employees, activity, participantCount);
 
-                boolean isAvailable = isTimeSlotAvailableForParticipants(
-                        currentTime, endTime, date, employees, activity, participantCount);
+                        slots.add(TimeSlotDTO.builder()
+                                .startTime(startTime)
+                                .endTime(endTime)
+                                .available(isAvailable)
+                                .build());
+                    }
+                }
+            }
+        } else {
+            for (EmployeeWorkHour workHour : workHours) {
+                LocalTime currentTime = workHour.getStartTime();
 
-                slots.add(TimeSlotDTO.builder()
-                        .startTime(currentTime)
-                        .endTime(endTime)
-                        .available(isAvailable)
-                        .build());
+                while (currentTime.plusMinutes(durationMinutes).isBefore(workHour.getEndTime()) ||
+                        currentTime.plusMinutes(durationMinutes).equals(workHour.getEndTime())) {
 
-                currentTime = currentTime.plusMinutes(30);
+                    LocalTime endTime = currentTime.plusMinutes(durationMinutes);
+
+                    boolean isAvailable = isTimeSlotAvailableForParticipants(
+                            currentTime, endTime, date, employees, activity, participantCount);
+
+                    slots.add(TimeSlotDTO.builder()
+                            .startTime(currentTime)
+                            .endTime(endTime)
+                            .available(isAvailable)
+                            .build());
+
+                    currentTime = currentTime.plusMinutes(30);
+                }
             }
         }
         return slots;

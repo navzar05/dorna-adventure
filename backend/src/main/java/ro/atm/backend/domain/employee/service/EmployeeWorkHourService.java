@@ -146,6 +146,20 @@ public class EmployeeWorkHourService {
         requestRepository.delete(request);
     }
 
+    @Transactional
+    public void deleteMyWorkHour(Long workHourId) {
+        User currentUser = getCurrentUser();
+        EmployeeWorkHour workHour = workHourRepository.findById(workHourId)
+                .orElseThrow(() -> new EntityNotFoundException("Work hour not found with id: " + workHourId));
+
+        // Verify that the work hour belongs to the current user
+        if (!workHour.getEmployee().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You can only delete your own work hours");
+        }
+
+        workHourRepository.delete(workHour);
+    }
+
     // Admin Methods
 
     public List<WorkHourRequestDTO> getAllRequests() {

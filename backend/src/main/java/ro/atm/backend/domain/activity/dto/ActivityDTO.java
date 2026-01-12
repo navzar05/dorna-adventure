@@ -25,8 +25,11 @@ public class ActivityDTO {
     private LocationDetailsDTO locationDetails; // Add this field
     private CategoryDTO category;
     private Boolean active;
+    private Boolean employeeSelectionEnabled;
     private List<String> imageUrls;
     private List<String> videoUrls;
+    private List<ActivityTimeSlotDTO> timeSlots;
+    private List<AssignedEmployeeDTO> assignedEmployees;
 
     public static ActivityDTO fromEntity(Activity activity) {
         return ActivityDTO.builder()
@@ -44,6 +47,7 @@ public class ActivityDTO {
                 .locationDetails(LocationDetailsDTO.fromEntity(activity.getLocationDetails())) // Add this
                 .category(activity.getCategory() != null ? CategoryDTO.fromEntity(activity.getCategory()) : null)
                 .active(activity.getActive())
+                .employeeSelectionEnabled(activity.getEmployeeSelectionEnabled())
                 .imageUrls(activity.getMediaList().stream()
                         .filter(m -> m.getMediaType() == ro.atm.backend.domain.activity.entity.Media.MediaType.IMAGE)
                         .map(ro.atm.backend.domain.activity.entity.Media::getUrl)
@@ -51,6 +55,13 @@ public class ActivityDTO {
                 .videoUrls(activity.getMediaList().stream()
                         .filter(m -> m.getMediaType() == ro.atm.backend.domain.activity.entity.Media.MediaType.VIDEO)
                         .map(ro.atm.backend.domain.activity.entity.Media::getUrl)
+                        .toList())
+                .timeSlots(activity.getTimeSlots().stream()
+                        .map(ActivityTimeSlotDTO::fromEntity)
+                        .toList())
+                .assignedEmployees(activity.getActivityEmployees().stream()
+                        .filter(ae -> ae.getActive())
+                        .map(ae -> AssignedEmployeeDTO.fromUser(ae.getEmployee()))
                         .toList())
                 .build();
     }
