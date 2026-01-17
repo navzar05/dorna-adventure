@@ -110,7 +110,7 @@ public class EmailService {
 
     @Async
     public void sendPasswordResetEmail(String to, String name, String token) {
-        String resetUrl = "http://localhost:5174/reset-password?token=" + token; // UPDATE THIS DOMAIN FOR PROD!
+        String verificationLink = frontendUrl + "/verify?token=" + token;
 
         String subject = "Reset Your Password - Dorna Adventure";
         String htmlBody = "<html>" +
@@ -118,7 +118,7 @@ public class EmailService {
                 "<h2>Hello, " + name + "!</h2>" +
                 "<p>You requested to reset your password.</p>" +
                 "<p>Click the link below to set a new password:</p>" +
-                "<a href=\"" + resetUrl + "\">Reset Password</a>" +
+                "<a href=\"" + verificationLink + "\">Reset Password</a>" +
                 "<p>This link expires in 15 minutes.</p>" +
                 "<p>If you did not request this, please ignore this email.</p>" +
                 "</body>" +
