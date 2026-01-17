@@ -54,7 +54,22 @@
       "helper": "Enter 6-digit code",
       "verify": "Verify",
       "verifying": "Verifying...",
-      "invalidCode": "Invalid authentication code. Please try again."
+      "invalidCode": "Invalid authentication code. Please try again.",
+      "setup": {
+        "title": "Set Up Two-Factor Authentication",
+        "scanStep": "Scan QR Code",
+        "verifyStep": "Verify Code",
+        "scanInstructions": "Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)",
+        "manualEntry": "Can't scan? Enter this code manually:",
+        "downloadApp": "Don't have an authenticator app? Download Google Authenticator or Authy from your app store.",
+        "verifyInstructions": "Enter the 6-digit code from your authenticator app to complete setup",
+        "verificationCode": "Verification Code",
+        "enterCode": "Enter 6-digit code from your app",
+        "verify": "Verify & Enable",
+        "verifying": "Verifying...",
+        "requiredWarning": "Two-factor authentication is required for your account. Please complete the setup to continue.",
+        "verificationError": "Invalid verification code. Please try again."
+      }
     },
     "login": {
       "title": "Login",
@@ -141,6 +156,12 @@
     "password": "Password",
     "saveChanges": "Save Changes",
     "changePassword": "Change Password",
+    "changeTemporaryPassword": "Change Temporary Password",
+    "temporaryPasswordWarning": "Your password is temporary and must be changed before you can continue. Please set a new password.",
+    "changingPassword": "Changing password...",
+    "changePasswordError": "Failed to change password",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "passwordMismatch": "Passwords do not match",
     "deleteAccount": "Delete Account",
     "deleteWarning": "Deleting your account is permanent and cannot be undone. All your data will be permanently removed.",
     "confirmDelete": "Confirm Account Deletion",
@@ -155,7 +176,6 @@
     "errors": {
       "loadFailed": "Failed to load user data",
       "updateFailed": "Failed to update profile",
-      "passwordMismatch": "Passwords do not match",
       "passwordTooShort": "Password must be at least 6 characters",
       "passwordChangeFailed": "Failed to change password",
       "passwordRequired": "Password is required",
@@ -747,6 +767,8 @@
   },
   "common": {
     "loading": "Loading...",
+    "saving": "Saving...",
+    "verifying": "Verifying...",
     "yes": "Yes",
     "no": "No",
     "back": "Back",

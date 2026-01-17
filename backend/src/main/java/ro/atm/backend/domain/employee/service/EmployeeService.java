@@ -74,6 +74,7 @@ public class EmployeeService {
         user.setLastName(request.getLastName());
         user.setPhoneNumber(request.getPhoneNumber());
         user.setEnabled(request.getEnabled() != null ? request.getEnabled() : true);
+        user.setPasswordTemporary(true); // Password set by admin is temporary
 
         // Set roles
         if (request.getRoles() != null && !request.getRoles().isEmpty()) {
@@ -89,9 +90,10 @@ public class EmployeeService {
 
         if (request.getTotpSecret() != null && request.getTotpEnabled() != null) {
             user.setTotpSecret(request.getTotpSecret());
-            user.setTotpEnabled(request.getTotpEnabled());
-            log.info("TOTP configured for user {}: enabled={}, secretLength={}",
-                    user.getUsername(), user.getTotpEnabled(), request.getTotpSecret().length());
+            // Don't enable TOTP until the user verifies it themselves on first login
+            user.setTotpEnabled(false);
+            log.info("TOTP secret configured for user {}, but not enabled yet (user must verify on first login). secretLength={}",
+                    user.getUsername(), request.getTotpSecret().length());
         } else {
             log.info("No TOTP configured for user {}", user.getUsername());
         }

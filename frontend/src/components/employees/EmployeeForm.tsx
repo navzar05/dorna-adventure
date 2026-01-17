@@ -14,18 +14,12 @@ import {
   FormControlLabel,
   Checkbox,
   Alert,
-  Paper,
-  Stepper,
-  Step,
-  StepLabel,
-  CircularProgress,
   FormGroup,
   FormLabel,
 } from '@mui/material';
 import { 
   Close as CloseIcon,
   Security as SecurityIcon,
-  Check as CheckIcon,
   Warning as WarningIcon,
 } from '@mui/icons-material';
 import { MuiTelInput } from 'mui-tel-input';
@@ -57,8 +51,6 @@ export default function EmployeeForm({ open, onClose, onSave, employee }: Employ
   
   const [loading, setLoading] = useState(false);
   const [totpSetup, setTotpSetup] = useState<TotpSetupResponse | null>(null);
-  const [totpVerificationCode, setTotpVerificationCode] = useState('');
-  const [totpVerified, setTotpVerified] = useState(false);
   const [totpStep, setTotpStep] = useState<'disabled' | 'generating' | 'scanning' | 'verifying' | 'enabled'>('disabled');
   const [initialRoles, setInitialRoles] = useState<string[]>(['ROLE_EMPLOYEE']);
 
@@ -79,13 +71,10 @@ export default function EmployeeForm({ open, onClose, onSave, employee }: Employ
       
       setInitialRoles(roles);
       setTotpSetup(null);
-      setTotpVerificationCode('');
-      setTotpVerified(false);
-      
+
       // Set initial TOTP state based on existing user
       if (employee?.totpEnabled) {
         setTotpStep('enabled');
-        setTotpVerified(true);
       } else {
         setTotpStep('disabled');
       }
@@ -114,8 +103,6 @@ export default function EmployeeForm({ open, onClose, onSave, employee }: Employ
     // Changing FROM ADMIN to non-ADMIN → reset TOTP
     if (!hasAdminRole && (totpStep === 'scanning' || totpStep === 'generating')) {
       setTotpSetup(null);
-      setTotpVerificationCode('');
-      setTotpVerified(false);
       setTotpStep('disabled');
     }
   }, [formData.roles, formData.username, open]);
@@ -168,7 +155,6 @@ export default function EmployeeForm({ open, onClose, onSave, employee }: Employ
       setTotpStep('generating');
       const response = await employeeService.generateTotpForNewUser(formData.username);
       setTotpSetup(response.data);
-      setTotpVerified(false);
       setTotpStep('scanning');
     } catch (error: any) {
       toast.error(error.response?.data?.error || t('admin.employees.totpSetupError'));
@@ -176,44 +162,11 @@ export default function EmployeeForm({ open, onClose, onSave, employee }: Employ
     }
   };
 
-  const handleVerifyTotpForNewUser = async () => {
-    if (!totpSetup?.secret || !totpVerificationCode) {
-      toast.error(t('admin.employees.enterCode'));
-      return;
-    }
-
-    try {
-      setTotpStep('verifying');
-      const response = await employeeService.verifyTotpCodeForNewUser(
-        totpSetup.secret,
-        totpVerificationCode
-      );
-      
-      if (response.data) {
-        toast.success(t('admin.employees.totpVerified'));
-        setTotpVerified(true);
-        setTotpStep('enabled');
-      } else {
-        toast.error(t('admin.employees.invalidCode'));
-        setTotpStep('scanning');
-      }
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || t('admin.employees.invalidCode'));
-      setTotpStep('scanning');
-    }
-  };
-
   const handleSubmit = async () => {
     const hasAdminRole = formData.roles.includes('ROLE_ADMIN');
     const hadAdminRole = initialRoles.includes('ROLE_ADMIN');
     const isRoleChange = employee && !hadAdminRole && hasAdminRole;
-    const isNewAdmin = !employee && hasAdminRole;
     
-    if (hasAdminRole && (isNewAdmin || isRoleChange) && !totpVerified) {
-      toast.error(t('admin.employees.mustVerifyTotp'));
-      return;
-    }
-
     try {
       setLoading(true);
       
@@ -223,12 +176,13 @@ export default function EmployeeForm({ open, onClose, onSave, employee }: Employ
       };
 
       // Add TOTP data for new admin or role change to admin
-      if (hasAdminRole && totpVerified && totpSetup?.secret) {
+      if (hasAdminRole && totpSetup?.secret) {
         if (!employee || isRoleChange) {
           dataToSave.totpSecret = totpSetup.secret;
-          dataToSave.totpEnabled = true;
+          // Set to false so the user must verify it themselves on first login
+          dataToSave.totpEnabled = false;
           console.log('✅ Including TOTP data:', {
-            totpEnabled: true,
+            totpEnabled: false,
             secretLength: totpSetup.secret.length
           });
         }
@@ -238,19 +192,12 @@ export default function EmployeeForm({ open, onClose, onSave, employee }: Employ
       if (employee && !hasAdminRole && hadAdminRole) {
         dataToSave.totpSecret = null;
         dataToSave.totpEnabled = false;
-        console.log('❌ Disabling TOTP');
       }
-
-      console.log('📤 Sending data:', {
-        ...dataToSave,
-        totpSecret: dataToSave.totpSecret ? '***hidden***' : undefined
-      });
       
       await onSave(dataToSave);
       onClose();
       toast.success(employee ? t('admin.employees.updated') : t('admin.employees.created'));
     } catch (error: any) {
-      console.error('❌ Save error:', error);
       toast.error(error.response?.data?.error || t('admin.employees.saveError'));
     } finally {
       setLoading(false);
@@ -261,28 +208,6 @@ export default function EmployeeForm({ open, onClose, onSave, employee }: Employ
     setFormData(prev => ({ ...prev, phoneNumber: newPhone }));
   };
 
-  const handleResetTotp = () => {
-    setTotpSetup(null);
-    setTotpVerificationCode('');
-    setTotpVerified(false);
-    setTotpStep('disabled');
-    handleGenerateTotpForNewUser();
-  };
-
-  const handleDisableTotpExisting = async () => {
-    if (!employee?.id) return;
-
-    if (window.confirm(t('admin.employees.confirmDisableTotp'))) {
-      try {
-        await employeeService.disableTotp(employee.id);
-        toast.success(t('admin.employees.totpDisabled'));
-        setTotpStep('disabled');
-        setTotpVerified(false);
-      } catch (error: any) {
-        toast.error(error.response?.data?.error || t('admin.employees.totpDisableError'));
-      }
-    }
-  };
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -305,158 +230,9 @@ export default function EmployeeForm({ open, onClose, onSave, employee }: Employ
     if (formData.roles.length === 0) {
       return false;
     }
-    
-    const hasAdminRole = formData.roles.includes('ROLE_ADMIN');
-    const hadAdminRole = initialRoles.includes('ROLE_ADMIN');
-    const isRoleChange = employee && !hadAdminRole && hasAdminRole;
-    const isNewAdmin = !employee && hasAdminRole;
-    
-    if (hasAdminRole && (isNewAdmin || isRoleChange) && !totpVerified) {
-      return false;
-    }
     return true;
   };
 
-  const renderTotpSection = () => {
-    const hasAdminRole = formData.roles.includes('ROLE_ADMIN');
-    
-    // Don't show TOTP section if no ADMIN role
-    if (!hasAdminRole) {
-      return null;
-    }
-
-    const hadAdminRole = initialRoles.includes('ROLE_ADMIN');
-
-    // For existing admin users who already have TOTP enabled
-    if (employee && hadAdminRole && employee.totpEnabled && totpStep === 'enabled') {
-      return (
-        <Paper variant="outlined" sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-            <SecurityIcon color="primary" />
-            <Typography variant="subtitle1" fontWeight={600}>
-              {t('admin.employees.twoFactorAuth')}
-            </Typography>
-          </Box>
-
-          <Alert severity="success" icon={<CheckIcon />} sx={{ mb: 2 }}>
-            {t('admin.employees.totpEnabledSuccess')}
-          </Alert>
-          
-          <Button
-            variant="outlined"
-            color="error"
-            onClick={handleDisableTotpExisting}
-          >
-            {t('admin.employees.disableTotp')}
-          </Button>
-        </Paper>
-      );
-    }
-
-    // For new users or role changes to admin
-    return (
-      <Paper variant="outlined" sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-          <SecurityIcon color="primary" />
-          <Typography variant="subtitle1" fontWeight={600}>
-            {t('admin.employees.twoFactorAuth')}
-          </Typography>
-        </Box>
-
-        {!formData.username && (
-          <Alert severity="warning" icon={<WarningIcon />}>
-            {t('admin.employees.enterUsernameFirst')}
-          </Alert>
-        )}
-
-        {totpStep === 'generating' && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-            <CircularProgress />
-          </Box>
-        )}
-
-        {totpStep === 'scanning' && totpSetup && (
-          <Box>
-            <Stepper activeStep={0} sx={{ mb: 3 }}>
-              <Step><StepLabel>{t('admin.employees.scanQR')}</StepLabel></Step>
-              <Step><StepLabel>{t('admin.employees.verifyCode')}</StepLabel></Step>
-            </Stepper>
-
-            <Alert severity="info" sx={{ mb: 2 }}>
-              {t('admin.employees.scanInstructions')}
-            </Alert>
-
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-              <img 
-                src={totpSetup.qrCodeDataUrl} 
-                alt="QR Code"
-                style={{ maxWidth: '250px', border: '2px solid #ddd', borderRadius: '8px' }}
-              />
-            </Box>
-
-            <Alert severity="warning" icon={false} sx={{ mb: 2 }}>
-              <Typography variant="body2" fontWeight={600} gutterBottom>
-                {t('admin.employees.manualEntry')}
-              </Typography>
-              <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
-                {totpSetup.secret}
-              </Typography>
-            </Alert>
-
-            <TextField
-              label={t('admin.employees.verificationCode')}
-              value={totpVerificationCode}
-              onChange={(e) => setTotpVerificationCode(e.target.value)}
-              placeholder="123456"
-              fullWidth
-              inputProps={{ maxLength: 6 }}
-              helperText={t('admin.employees.enterCodeFromApp')}
-              sx={{ mb: 2 }}
-            />
-
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button
-                variant="outlined"
-                onClick={handleResetTotp}
-                fullWidth
-              >
-                {t('admin.employees.regenerateQR')}
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleVerifyTotpForNewUser}
-                disabled={totpVerificationCode.length !== 6}
-                fullWidth
-              >
-                {t('admin.employees.verify')}
-              </Button>
-            </Box>
-          </Box>
-        )}
-
-        {totpStep === 'verifying' && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-            <CircularProgress />
-          </Box>
-        )}
-
-        {totpStep === 'enabled' && !employee?.totpEnabled && (
-          <Box>
-            <Alert severity="success" icon={<CheckIcon />} sx={{ mb: 2 }}>
-              {t('admin.employees.totpVerifiedReadyToSave')}
-            </Alert>
-            <Button
-              variant="outlined"
-              onClick={handleResetTotp}
-              fullWidth
-            >
-              {t('admin.employees.regenerateQR')}
-            </Button>
-          </Box>
-        )}
-      </Paper>
-    );
-  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -605,9 +381,6 @@ export default function EmployeeForm({ open, onClose, onSave, employee }: Employ
             )}
 
           </Box>
-
-          {/* TOTP Setup Section */}
-          {renderTotpSection()}
 
           {/* Warning if trying to save admin without TOTP */}
           {formData.roles.includes('ROLE_ADMIN') && !isFormValid() && (

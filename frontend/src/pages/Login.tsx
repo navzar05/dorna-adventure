@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, type FormEvent, type ChangeEvent } from 'react';
 import { 
@@ -16,6 +17,10 @@ import { Link, useNavigate } from 'react-router-dom'; // Import Router Link
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { TotpModal } from '../components/shared';
+import ChangePasswordModal from '../components/shared/ChangePasswordModal';
+import TotpSetupModal from '../components/shared/TotpSetupModal';
+import { userService } from '../services/userService';
+import type { TotpSetupResponse } from '../types/employee';
 
 interface LoginFormData {
   username: string;
@@ -43,6 +48,17 @@ export default function Login() {
   const [totpError, setTotpError] = useState<string>('');
   const [totpLoading, setTotpLoading] = useState(false);
 
+  // Change Password Modal State
+  const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
+  const [changePasswordError, setChangePasswordError] = useState<string>('');
+  const [changePasswordLoading, setChangePasswordLoading] = useState(false);
+
+  // TOTP Setup Modal State
+  const [totpSetupModalOpen, setTotpSetupModalOpen] = useState(false);
+  const [totpSetupData, setTotpSetupData] = useState<TotpSetupResponse | null>(null);
+  const [totpSetupError, setTotpSetupError] = useState<string>('');
+  const [totpSetupLoading, setTotpSetupLoading] = useState(false);
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value, checked, type } = e.target;
     setFormData(prev => ({
@@ -54,13 +70,20 @@ export default function Login() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setError('');
-    setIsAccountDisabled(false); 
+    setIsAccountDisabled(false);
     setLoading(true);
 
     const result = await login(formData.username, formData.password);
 
     if (result.success) {
-      navigate('/home');
+      console.log(result.user);
+      // Check if password is temporary
+      if (result.user?.passwordTemporary) {
+        setChangePasswordModalOpen(true);
+        setLoading(false);
+      } else {
+        navigate('/home');
+      }
     } else if (result.requiresTotp) {
       setTotpModalOpen(true);
       setLoading(false);
@@ -68,7 +91,7 @@ export default function Login() {
       switch (result.errorCode) {
         case "ACCOUNT_DISABLED":
           setError(t('auth.login.accountDisabled', 'Account disabled. Please verify your email.'));
-          setIsAccountDisabled(true); 
+          setIsAccountDisabled(true);
           break;
         default:
           setError(result.error || t('auth.login.error', 'Login failed'));
@@ -86,7 +109,14 @@ export default function Login() {
       if (result.success) {
         setTotpModalOpen(false);
         await new Promise(resolve => setTimeout(resolve, 100));
-        navigate('/home', { replace: true });
+
+        // Check if password is temporary after TOTP verification
+        if (result.user?.passwordTemporary) {
+          setChangePasswordModalOpen(true);
+          setTotpLoading(false);
+        } else {
+          navigate('/home', { replace: true });
+        }
       } else {
         setTotpError(result.error || t('auth.totp.invalidCode'));
       }
@@ -102,6 +132,51 @@ export default function Login() {
     setTotpModalOpen(false);
     setTotpError('');
     setLoading(false);
+  };
+
+  const handleChangePassword = async (newPassword: string): Promise<void> => {
+    setChangePasswordError('');
+    setChangePasswordLoading(true);
+
+    try {
+      await userService.changeTemporaryPassword(newPassword);
+      setChangePasswordModalOpen(false);
+      setChangePasswordLoading(false);
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Try to fetch TOTP setup data
+      try {
+        const response = await userService.getTotpSetup();
+        console.log('TOTP setup data received:', response.data);
+        setTotpSetupData(response.data);
+        setTotpSetupModalOpen(true);
+      } catch (error: any) {
+        console.log('TOTP setup not needed or already enabled, proceeding to home');
+        // TOTP setup not needed (already enabled or not required), navigate to home
+        navigate('/home', { replace: true });
+      }
+    } catch (error: any) {
+      console.error('Password change error:', error);
+      setChangePasswordError(error.response?.data?.error || t('account.changePasswordError', 'Failed to change password'));
+      setChangePasswordLoading(false);
+    }
+  };
+
+  const handleTotpSetupVerify = async (code: string): Promise<void> => {
+    setTotpSetupError('');
+    setTotpSetupLoading(true);
+
+    try {
+      await userService.verifyTotp(code);
+      setTotpSetupModalOpen(false);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      navigate('/home', { replace: true });
+    } catch (error: any) {
+      console.error('TOTP setup verification error:', error);
+      setTotpSetupError(error.response?.data?.error || t('auth.totp.setup.verificationError', 'Invalid verification code'));
+    } finally {
+      setTotpSetupLoading(false);
+    }
   };
 
   return (
@@ -219,6 +294,26 @@ export default function Login() {
         loading={totpLoading}
         error={totpError}
       />
+
+      <ChangePasswordModal
+        open={changePasswordModalOpen}
+        onSubmit={handleChangePassword}
+        loading={changePasswordLoading}
+        error={changePasswordError}
+        isTemporary={true}
+      />
+
+      {totpSetupData && (
+        <TotpSetupModal
+          open={totpSetupModalOpen}
+          onVerify={handleTotpSetupVerify}
+          qrCodeDataUrl={totpSetupData.qrCodeDataUrl}
+          secret={totpSetupData.secret}
+          loading={totpSetupLoading}
+          error={totpSetupError}
+          isRequired={true}
+        />
+      )}
     </>
   );
 }

@@ -72,7 +72,7 @@ const login = async (
       setToken(token);
       setUserRole(roles);
 
-      return { success: true };
+      return { success: true, user: loginData.user};
     } catch (error: any) {
       console.error('Login error details:', error);
       

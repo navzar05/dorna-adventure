@@ -278,7 +278,7 @@ export default function Admin() {
       toast.success(t('admin.employees.created'));
     }
     
-    fetchEmployees();
+    // fetchEmployees();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error saving employee:", error);

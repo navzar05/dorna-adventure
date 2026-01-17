@@ -52,6 +52,7 @@ export interface User {
   phoneNumber: string;
   roles: string[];
   totpEnabled?: boolean;
+  passwordTemporary?: boolean;
 }
 
 export interface UpdateUserRequest {

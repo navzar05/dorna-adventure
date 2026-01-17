@@ -291,7 +291,7 @@ export default function ActivityForm({ open, onClose, onSave, activity, categori
   };
 
   const handleNext = () => {
-    setActiveTab(prev => Math.min(prev + 1, 3));
+    setActiveTab(prev => Math.min(prev + 1, 4));
   };
 
   const handlePrevious = () => {

@@ -23,6 +23,7 @@ public class UserDTO {
     private Set<String> roles;
     private Boolean enabled;
     private Boolean totpEnabled;
+    private Boolean passwordTemporary;
 
     public static UserDTO fromEntity(User user) {
         return UserDTO.builder()
@@ -37,6 +38,7 @@ public class UserDTO {
                         .collect(Collectors.toSet()))
                 .enabled(user.isEnabled())
                 .totpEnabled(user.getTotpEnabled())
+                .passwordTemporary(user.isPasswordTemporary())
                 .build();
     }
 }

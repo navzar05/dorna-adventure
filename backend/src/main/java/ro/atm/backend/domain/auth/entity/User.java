@@ -77,6 +77,9 @@ public class User implements UserDetails, CredentialsContainer {
     @Column(name = "reset_password_token_expiry")
     private LocalDateTime resetPasswordTokenExpiry;
 
+    @Column(name = "password_temporary", nullable = false)
+    private boolean passwordTemporary = false;
+
     public User(String username, String password, String email, String firstName, String lastName, String phoneNumber) {
         this.username = username;
         this.password = password;
