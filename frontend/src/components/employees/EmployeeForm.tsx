@@ -41,7 +41,6 @@ export default function EmployeeForm({ open, onClose, onSave, employee }: Employ
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    password: '',
     firstName: '',
     lastName: '',
     phoneNumber: '',
@@ -61,7 +60,6 @@ export default function EmployeeForm({ open, onClose, onSave, employee }: Employ
       setFormData({
         username: employee?.username || '',
         email: employee?.email || '',
-        password: '',
         firstName: employee?.firstName || '',
         lastName: employee?.lastName || '',
         phoneNumber: employee?.phoneNumber || '',
@@ -223,10 +221,7 @@ export default function EmployeeForm({ open, onClose, onSave, employee }: Employ
     if (!validateEmail(formData.email)) {
       return false;
     }
-    
-    if (!employee && !formData.password) {
-      return false;
-    }
+
     if (formData.roles.length === 0) {
       return false;
     }
@@ -264,17 +259,6 @@ export default function EmployeeForm({ open, onClose, onSave, employee }: Employ
               disabled={!!employee}
               helperText={employee ? t('admin.employees.usernameHelper') : ''}
             />
-
-            {!employee && (
-              <TextField
-                label={t('admin.employees.password')}
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                required
-                fullWidth
-              />
-            )}
 
             <TextField
               label={t('admin.employees.email')}

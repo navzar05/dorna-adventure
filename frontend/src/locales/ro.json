@@ -57,9 +57,9 @@
       "verifying": "Se verifică...",
       "invalidCode": "Cod de autentificare invalid. Te rugăm să încerci din nou.",
       "setup": {
-        "title": "Configurare Autentificare cu Doi Factori",
-        "scanStep": "Scanează Codul QR",
-        "verifyStep": "Verifică Codul",
+        "title": "Configurare autentificare în doi pași",
+        "scanStep": "Scanează codul QR",
+        "verifyStep": "Verifică caractere",
         "scanInstructions": "Scanează acest cod QR cu aplicația ta de autentificare (Google Authenticator, Authy, etc.)",
         "manualEntry": "Nu poți scana? Introdu acest cod manual:",
         "downloadApp": "Nu ai o aplicație de autentificare? Descarcă Google Authenticator sau Authy din magazinul de aplicații.",

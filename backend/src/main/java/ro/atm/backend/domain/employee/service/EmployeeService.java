@@ -17,10 +17,13 @@ import ro.atm.backend.domain.employee.dto.EmployeeSwapInfo;
 import ro.atm.backend.domain.employee.dto.EmployeeSwapOptions;
 import ro.atm.backend.common.constants.SecurityConstants;
 import ro.atm.backend.common.exception.ResourceNotFoundException;
+import ro.atm.backend.infrastructure.email.EmailService;
 
+import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +38,7 @@ public class EmployeeService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     // Specialized services
     private final EmployeeSchedulingService schedulingService;
@@ -69,12 +73,22 @@ public class EmployeeService {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        // Generate random temporary password
+        String temporaryPassword = generateRandomPassword();
+        user.setPassword(passwordEncoder.encode(temporaryPassword));
+
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setPhoneNumber(request.getPhoneNumber());
-        user.setEnabled(request.getEnabled() != null ? request.getEnabled() : true);
+
+        // Set enabled to FALSE initially - user must verify email
+        user.setEnabled(false);
         user.setPasswordTemporary(true); // Password set by admin is temporary
+
+        // Generate verification token
+        String verificationToken = UUID.randomUUID().toString();
+        user.setVerificationToken(verificationToken);
 
         // Set roles
         if (request.getRoles() != null && !request.getRoles().isEmpty()) {
@@ -100,6 +114,16 @@ public class EmployeeService {
 
         user = userRepository.save(user);
         log.info("User {} saved with ID: {}", user.getUsername(), user.getId());
+
+        // Send employee account creation email with temporary password and verification link
+        emailService.sendEmployeeAccountCreatedEmail(
+            user.getEmail(),
+            user.getFirstName(),
+            user.getUsername(),
+            temporaryPassword,
+            verificationToken
+        );
+        log.info("Employee account creation email sent to {} with temporary password", user.getEmail());
 
         return UserDTO.fromEntity(user);
     }
@@ -199,5 +223,42 @@ public class EmployeeService {
                 .phoneNumber(user.getPhoneNumber())
                 .enabled(user.isEnabled())
                 .build();
+    }
+
+    /**
+     * Generates a secure random password for new employees
+     * @return 12-character password with mixed case, digits, and special characters
+     */
+    private String generateRandomPassword() {
+        String upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String lowerCase = "abcdefghijklmnopqrstuvwxyz";
+        String digits = "0123456789";
+        String specialChars = "!@#$%&*";
+        String allChars = upperCase + lowerCase + digits + specialChars;
+
+        SecureRandom random = new SecureRandom();
+        StringBuilder password = new StringBuilder(12);
+
+        // Ensure at least one character from each category
+        password.append(upperCase.charAt(random.nextInt(upperCase.length())));
+        password.append(lowerCase.charAt(random.nextInt(lowerCase.length())));
+        password.append(digits.charAt(random.nextInt(digits.length())));
+        password.append(specialChars.charAt(random.nextInt(specialChars.length())));
+
+        // Fill the rest randomly
+        for (int i = 4; i < 12; i++) {
+            password.append(allChars.charAt(random.nextInt(allChars.length())));
+        }
+
+        // Shuffle the password to randomize positions
+        char[] passwordArray = password.toString().toCharArray();
+        for (int i = passwordArray.length - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            char temp = passwordArray[i];
+            passwordArray[i] = passwordArray[j];
+            passwordArray[j] = temp;
+        }
+
+        return new String(passwordArray);
     }
 }

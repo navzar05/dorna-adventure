@@ -45,7 +45,7 @@ public class EmailService {
 
     @Async
     public void sendAccountVerificationEmail(String to, String name, String token) {
-        String verificationLink = frontendUrl + "/auth/verify?token=" + token;
+        String verificationLink = frontendUrl + "/verify?token=" + token;
         String subject = "Verify your Dorna Adventure Account";
 
         String htmlBody = String.format("""
@@ -58,6 +58,33 @@ public class EmailService {
                 <p><small>%s</small></p>
             </div>
             """, name, verificationLink, verificationLink);
+
+        sendHtmlMessage(to, subject, htmlBody);
+    }
+
+    @Async
+    public void sendEmployeeAccountCreatedEmail(String to, String name, String username, String temporaryPassword, String token) {
+        String verificationLink = frontendUrl + "/verify?token=" + token;
+        String subject = "Your Dorna Adventure Employee Account";
+
+        String htmlBody = String.format("""
+            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                <h2 style="color: #2d6a4f;">Welcome to Dorna Adventure Team!</h2>
+                <p>Hi %s,</p>
+                <p>An employee account has been created for you. Here are your login credentials:</p>
+                <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                    <p style="margin: 5px 0;"><strong>Username:</strong> %s</p>
+                    <p style="margin: 5px 0;"><strong>Temporary Password:</strong> <code style="background-color: #fff; padding: 5px; border-radius: 3px;">%s</code></p>
+                </div>
+                <p><strong>Important:</strong> You will be required to change this password on your first login.</p>
+                <p>Before you can log in, please verify your account by clicking the button below:</p>
+                <a href="%s" style="background-color: #2d6a4f; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0;">Verify Account</a>
+                <p>If the button doesn't work, copy and paste this link:</p>
+                <p><small>%s</small></p>
+                <br>
+                <p>Best regards,<br>Dorna Adventure Team</p>
+            </div>
+            """, name, username, temporaryPassword, verificationLink, verificationLink);
 
         sendHtmlMessage(to, subject, htmlBody);
     }
